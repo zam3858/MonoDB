@@ -100,6 +100,7 @@ Method|Details
 `find($key, $value)`|<p>`find(string $key, string $value)`</p><p>Retrieve data based on `$value` and possible match it, using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
 `flush()`|<p>`flush()`</p>Flush database, delete all keys.
 
+
 ## Left Chain Methods *(optional)*
 
 ```php
@@ -113,5 +114,20 @@ Chain Method|Details
 `raw()`|<p>`raw()`</p>Retrieve additional data for each key.
 
 
+## How Versions Work
+
+Versions are as follows: Major.Minor.Patch
+
+* Major: Rewrites with completely new code-base.
+* Minor: New Features/Changes that breaks compatibility.
+* Patch: New Features/Fixes that does not break compatibility.
 
 
+## Contributions
+
+Anyone can contribute to MonoDB. Please do so by posting issues when you've found something that is unexpected or sending a pull request for improvements.
+
+
+## License
+
+MonoDB is open-sourced software licensed under the [GPL-3.0 license](https://opensource.org/licenses/GPL-3.0).
