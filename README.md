@@ -1,6 +1,23 @@
 # MonoDB
 MonoDB is an Open Source Simple Flat File key-value data structure store, used as a database, cache and message broker.
 
+## Features
+- Key/Value Data Storing
+- Key Expires
+- Can store binary file
+- Encrypt/Decrypt data
+- File locking
+
+## Supported data type
+- string
+- integer
+- float
+- array
+- object
+- resource
+- binary
+- json
+
 ## Installation
 
 Use [Composer](http://getcomposer.org/) to install package.
@@ -17,6 +34,11 @@ use MonoDB\MonoDB;
 
 require 'path/to/MonoDB/src/MonoDB.php';
 ```
+**Minimum Requirement:**
+- PHP 5.6+
+- ctype extension
+- json extension
+
 ## Usage
 
 ```php
@@ -93,7 +115,7 @@ $db->Method();
 
 Method|Details
 :---|:---
-`set($key, $value, $expiry)`|<p>`set(string $key, mixed $value, (Optional)int $expiry)`</p><p>`$key` Only alphanumeric, hyphen, dot and semicolon considered as valid input.<br>`$value` Accept any data type.<br>`$expiry` *(optional)* The key will expires in seconds if set.</p>Return `key string` if successful, `false` otherwise.
+`set($key, $value, $expiry)`|<p>`set(string $key, mixed $value, (Opt)int $expiry)`</p><p>`$key` Only alphanumeric, hyphen, dot and semicolon considered as valid input.<br>`$value` Accept any data type.<br>`$expiry` *(optional)* The key will expires in seconds if set.</p>Return `key string` if successful, `false` otherwise.
 `get($key)`|<p>`get(string $key)`</p><p>Retrieve data associate with the key `$key`.</p>Return `mixed string` if successful, `false` otherwise.
 `delete($key)`|<p>`delete(string $key)`</p><p>Delete data associate with the key`$key`.</p>Return `true` if successful, `false` otherwise.
 `keys($key)`|<p>`keys((Optional)string $key)`</p><p>Retrieve all available Keys. Optionally retrieve specified `$key` <br>and possible match it using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
