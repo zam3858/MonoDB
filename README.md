@@ -123,7 +123,35 @@ Method|Details
 `has($key)`|<p>`has(string $key)`</p><p>Check if key `$key` exists.</p>Return `true` if availale, `false` otherwise.
 `flush()`|<p>`flush()`</p>Flush database, delete all keys.
 
+Example:
+- Store image file
+```php
+$db = new MonoDB\MonoDB();
+$db->set('image', 'file:///path-to-image/image.jpg', 0, ['mime'=>'image/jpg']);
+```
 
+- Retrieve image data
+```php
+$db = new MonoDB\MonoDB();
+// binary output
+$blob = $db->blob()->get('image');
+
+// array output
+$blob = $db->get('image');
+if ( is_array($blob) ) {
+    echo "<img src="data:".$blob['mime'].";base64,".$blob['data'].">";
+}
+```
+
+- Store mysql query results
+```php
+$mysqli = new mysqli("localhost","dbuser","dbpassword","dbname");
+$result = $mysqli->query("select * from tables");
+
+$db = new MonoDB\MonoDB();
+$db->set('mysqlres', $result, strtotime('+1 minnute') );
+
+```
 ## Left Chain Methods *(optional)*
 
 ```php
