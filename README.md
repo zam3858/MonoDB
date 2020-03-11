@@ -112,7 +112,8 @@ $db->Chain()->Method();
 Chain Method|Details
 :---|:---
 `options($config)`|<p>`options(array $config)`</p>Set database options.
-`raw()`|<p>`raw()`</p>Retrieve additional data for each key.
+`meta()`|<p>`meta()`</p>Retrieve key meta data.
+`blob()`|<p>`blob()`</p>Output data as binary if data type of Key is binary. By default MonoDB return as base64 encoded data for safety reason.
 
 
 ## How Versions Work
