@@ -98,6 +98,7 @@ Method|Details
 `delete($key)`|<p>`delete(string $key)`</p><p>Delete data associate with the key`$key`.</p>Return `true` if successful, `false` otherwise.
 `keys($key)`|<p>`keys((Optional)string $key)`</p><p>Retrieve all available Keys. Optionally retrieve specified `$key` <br>and possible match it using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
 `find($key, $value)`|<p>`find(string $key, string $value)`</p><p>Retrieve data based on `$value` and possible match it, using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
+`has($key)`|<p>`has(string $key)`</p><p>Check if key `$key` exists.</p>Return `true` if availale, `false` otherwise.
 `flush()`|<p>`flush()`</p>Flush database, delete all keys.
 
 
