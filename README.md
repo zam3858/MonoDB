@@ -180,7 +180,7 @@ Chain Method|Details
 `meta()`|<p>`meta()`</p>Retrieve key meta data.
 `blob()`|<p>`blob()`</p>Output data as binary if data type of Key is binary. By default MonoDB return as base64 encoded data for safety reason.
 `encrypt($secret)`|<p>`encrypt(string $secret)`</p>
-`decrypt($secret)`|<p>`encrypt(string $secret)`</p>
+`decrypt($secret)`|<p>`decrypt(string $secret)`</p>
 
 Example:
 - Change dbname
