@@ -1,0 +1,5 @@
+/vendor/
+composer.lock
+CodeSniffer.*
+phpcbf.phar
+*.sh

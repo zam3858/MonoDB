@@ -1,0 +1,22 @@
+{
+    "name": "nawawi/monodb",
+    "description": "A simple flat-file key-value data structure store, used as a database, cache and message broker.",
+    "type": "package",
+    "require": {
+        "ext-ctype": "*",
+        "ext-json": "*",
+        "php": ">=5.6"
+    },
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Nawawi Jamili",
+            "email": "nawawi@rutweb.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MonoDB\\": "src/"
+        }
+    }
+}
