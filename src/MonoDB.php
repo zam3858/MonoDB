@@ -361,14 +361,15 @@ class MonoDB {
      */
     private function data_type( $data ) {
         $type = gettype( $data );
-        if ( 'string' === $type && $this->is_binary( $data ) ) {
-            $type = 'binary';
+
+        if ( 'object' === $type && ( $data instanceof stdClass ) ) {
+            $type = 'stdClass';
 
         } elseif ( 'string' === $type && $this->is_json( $data ) ) {
             $type = 'json';
 
-        } elseif ( 'object' === $type && ( $data instanceof stdClass ) ) {
-            $type = 'stdClass';
+        } elseif ( 'string' === $type && $this->is_binary( $data ) ) {
+            $type = 'binary';
         }
         return $type;
     }
@@ -384,9 +385,6 @@ class MonoDB {
 
         } elseif ( 'object' === $type || 'resource' === $type ) {
             $data = serialize( $data );
-
-        } elseif ( 'json' === $type ) {
-            $data = json_decode( $data, true );
 
         } elseif ( 'binary' === $type ) {
             $data = base64_encode( $data );
@@ -409,9 +407,6 @@ class MonoDB {
 
         } elseif ( 'object' === $type || 'resource' === $type ) {
             $data = unserialize( $data );
-
-        } elseif ( 'json' === $type ) {
-            $data = json_encode( $data );
 
         } elseif ( 'binary' === $type && $is_blob ) {
             $data = base64_decode( $data );
@@ -690,8 +685,14 @@ class MonoDB {
      */
     public function find( $key, $value ) {
         $data = $this->get( $key );
-        if ( ! empty( $data ) && is_array( $data ) ) {
-            return $this->array_search_r( $value, $data );
+        if ( ! empty( $data ) ) {
+            if ( is_array( $data ) ) {
+                return $this->array_search_r( $value, $data );
+            }
+            if ( $this->is_wildcard( $value ) ) {
+                return $this->match_wildcard( $data, $value );
+            }
+            return $this->has_with( $data, $value );
         }
         return false;
     }
