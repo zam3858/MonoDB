@@ -179,8 +179,8 @@ Chain Method|Details
 `options($config)`|<p>`options(array $config)`</p>Set database options.
 `meta()`|<p>`meta()`</p>Retrieve key meta data.
 `blob()`|<p>`blob()`</p>Output data as binary if data type of Key is binary. By default MonoDB return as base64 encoded data for safety reason.
-`encrypt($secret)`|<p>`encrypt(string $secret)`</p>
-`decrypt($secret)`|<p>`decrypt(string $secret)`</p>
+`encrypt($secret)`|<p>`encrypt(string $secret)`</p>Perform data encryption.
+`decrypt($secret)`|<p>`decrypt(string $secret)`</p>Perform data decryption.
 
 Example:
 - Change dbname
