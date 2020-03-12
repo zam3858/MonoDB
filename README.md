@@ -159,7 +159,8 @@ $mysqli = new mysqli("localhost","dbuser","dbpassword","dbname");
 $result = $mysqli->query("select * from tables");
 
 $db = new MonoDB\MonoDB();
-$db->set('mysqlres', $result, strtotime('+1 minnute') );
+// key expires after 1 minutes
+$db->set('mysqlres', $result, strtotime('+1 minute') );
 
 ```
 
@@ -178,6 +179,22 @@ Chain Method|Details
 `blob()`|<p>`blob()`</p>Output data as binary if data type of Key is binary. By default MonoDB return as base64 encoded data for safety reason.
 `encrypt($secret)`|<p>`encrypt(string $secret)`</p>
 `decrypt($secret)`|<p>`encrypt(string $secret)`</p>
+
+Example:
+- Change dbname
+```php
+$db = MonoDB\MonoDB();
+$db->options(['dbname'=>'db2'])->set('key','value');
+```
+
+- Encrypt data
+```php
+$db->encrypt('123456')->set('key','sangat rahsia');
+```
+- Decrypt data
+```php
+$db->decrypt('123456')->get('key');
+```
 
 
 ## How Versions Work
