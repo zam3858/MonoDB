@@ -150,7 +150,7 @@ class MonoDB {
      */
     private function start_with( $haystack, $needles ) {
         foreach ( (array) $needles as $needle ) {
-            if ( $needle != '' && strpos( $haystack, $needle ) === 0 ) {
+            if ( '' !== $needle && 0 === strpos( $haystack, $needle ) ) {
                 return true;
             }
         }
