@@ -1,12 +1,16 @@
 # MonoDB
 MonoDB is an Open Source Simple Flat File key-value data structure store, used as a database, cache and message broker.
 
+
 ## Features
 - Key/Value Data Storing
+- Array-based Data Structure
 - Key Expires
+- Support multiple type of data
 - Can store binary file
 - Encrypt/Decrypt data
 - File locking
+
 
 ## Supported data type
 - string
@@ -17,6 +21,7 @@ MonoDB is an Open Source Simple Flat File key-value data structure store, used a
 - resource
 - binary
 - json
+
 
 ## Installation
 
@@ -39,11 +44,13 @@ require 'path/to/MonoDB/src/MonoDB.php';
 - PHP ctype extension
 - PHP json extension
 
+
 ## Usage
 
 ```php
 // Setting the data directory and change default configuration.
-// By default, if no directory is specified, MonoDB will create data directory in current working directory.
+// By default, if no directory is specified, MonoDB will create data directory
+// in current working directory.
 $db = new MonoDB([
     'path'      => 'path/to/data/dir',
     'dbname'    => 'monodb0'
@@ -78,6 +85,7 @@ $array = $db->keys();
 // find data
 $data = $db->find('key', 'value');
 ```
+
 
 ## Config Options
 
@@ -122,7 +130,7 @@ Method|Details
 `delete($key)`|<p>`delete(string $key)`</p><p>Delete data associate with the key`$key`.</p>Return `true` if successful, `false` otherwise.
 `keys($key)`|<p>`keys((Optional)string $key)`</p><p>Retrieve all available Keys. Optionally retrieve specified `$key` <br>and possible match it using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
 `find($key, $value)`|<p>`find(string $key, string $value)`</p><p>Retrieve data based on `$value` and possible match it, using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
-`exists($key)`|<p>`exists(string $key)`</p><p>Check if key `$key` exists and data file readable.</p>Return `true` if available, `false` otherwise.
+`exists($key)`|<p>`exists(string $key)`</p><p>Check if key `$key` exists and data file is readable.</p>Return `true` if available, `false` otherwise.
 `flush()`|<p>`flush()`</p>Flush database, delete all keys.
 
 Example:
@@ -154,6 +162,8 @@ $db = new MonoDB\MonoDB();
 $db->set('mysqlres', $result, strtotime('+1 minnute') );
 
 ```
+
+
 ## Left Chain Methods *(optional)*
 
 ```php
@@ -166,6 +176,8 @@ Chain Method|Details
 `options($config)`|<p>`options(array $config)`</p>Set database options.
 `meta()`|<p>`meta()`</p>Retrieve key meta data.
 `blob()`|<p>`blob()`</p>Output data as binary if data type of Key is binary. By default MonoDB return as base64 encoded data for safety reason.
+`encrypt($secret)`|<p>`encrypt(string $secret)`</p>
+`decrypt($secret)`|<p>`encrypt(string $secret)`</p>
 
 
 ## How Versions Work
