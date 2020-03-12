@@ -39,7 +39,7 @@ class MonoDB {
      * Initialize the class and set its properties.
      */
     public function __construct( $options = [] ) {
-        $this->data_path = dirname( realpath( __FILE__ ) ).'/monodb0/';
+        $this->data_path = getcwd().'/monodb0/';
         $this->options( $options );
         $this->errors = [];
     }
