@@ -2,14 +2,6 @@
     "name": "nawawi/monodb",
     "description": "A simple flat-file key-value data structure store, used as a database, cache and message broker.",
     "type": "package",
-    "require": {
-        "ext-ctype": "*",
-        "ext-json": "*",
-        "php": ">=5.6"
-    },
-    "require-dev": {
-        "squizlabs/php_codesniffer": "3.*"
-    },
     "license": "GPL-3.0",
     "authors": [
         {
@@ -17,9 +9,26 @@
             "email": "nawawi@rutweb.com"
         }
     ],
+    "require": {
+        "php": ">=5.6",
+        "ext-ctype": "*",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "*",
+        "object-calisthenics/phpcs-calisthenics-rules": "*",
+        "phpcompatibility/php-compatibility": "*",
+        "wp-coding-standards/wpcs": "*"
+    },
     "autoload": {
         "psr-4": {
             "MonoDB\\": "src/"
         }
+    },
+    "scripts": {
+        "format-code": [
+            "./vendor/bin/phpcbf ./src/"
+        ]
     }
+
 }

@@ -1,0 +1,11 @@
+* text=auto
+
+/.gitattributes export-ignore
+/.github export-ignore
+/.gitignore export-ignore
+/.phpcs.xml export-ignore
+/docs export-ignore
+/examples export-ignore
+/phpdoc.dist.xml export-ignore
+/test export-ignore
+/travis.phpunit.xml.dist export-ignore
