@@ -32,11 +32,18 @@ Use [Composer](http://getcomposer.org/) to install package.
 ```sh
 composer require nawawi/monodb:^1.0
 ```
+Load library using composer autoload.
+```php
+require 'vendor/autoload.php';
+```
+Load library directly from package directory.
+```php
+require 'vendor/nawawi/monodb/MonoDB.php';
+```
 
 Alternatively, if you're not using Composer, download the files and copy the contents of the MonoDB folder into one of the include_path directories specified in your PHP configuration and load MonoDB class file manually:
 
 ```php
-<?php
 use MonoDB\MonoDB;
 
 require 'path/to/MonoDB/src/MonoDB.php';
@@ -50,42 +57,102 @@ require 'path/to/MonoDB/src/MonoDB.php';
 ## Usage
 
 ```php
-// Setting the data directory and change default configuration.
-// By default, if no directory is specified, MonoDB will create data directory
-// in current working directory.
-$db = new MonoDB([
-    'path'      => 'path/to/data/dir',
-    'dbname'    => 'monodb0'
-]);
+// Setting the data directory and database name.
+$db = new MonoDB(
+    [
+        'path'      => 'path/to/data/dir',
+        'dbname'    => 'monodb0'
+    ]
+);
 
-// Store and retrieve string data.
-// myname is key and kobayashi is data to store.
-$db->set('myname', 'kobayashi maru');
+// Store the value of "hello world!" with the key "greeting",
+// will return the key string if success, false otherwise.
+$response = $db->set( 'greeting', 'hello world!' );
+echo $response;
 
-// Will return 'kobayashi maru'
-echo $db->get('myname');
+// Retrieve and display the value of "greeting" key.
+echo $db->get( 'greeting' );
 
-// Store array data
-$data = [
-  'name' => 'mat jargon',
-  'status' => 'lalang'
+// Store value as associative array data.
+$profile = [
+    'name' => 'borhan',
+    'age' => 28,
+    'sex' => 'male'
 ];
 
-$db->set('katahikmat', $data);
-print_r($db->get('katahikmat'));
+$db->set( 'student', $profile );
 
-// Will return
-Array
-(
-    [name] => mat jargon
-    [status] => lalang
-)
+// Store value as indexed array data.
+$student = [];
+$student[0] = 'borhan';
+$student[1] = 'leman';
+$student[2] = 'vanya';
 
-// get all keys
-$array = $db->keys();
+$db->set( 'student', $student );
 
-// find data
-$data = $db->find('key', 'value');
+// Store value as multidimensional array data.
+$student = [];
+$student[0]['name'] = 'borhan';
+$student[0]['age'] = 28;
+$student[0]['sex'] = 'male';
+$student[0]['details'] = [
+    'full name' => 'Borhan bin Nahrob',
+    'address'   => 'No 23 Jalan 5, KL'
+];
+
+$student[1]['name'] = 'leman';
+$student[1]['age'] = 32;
+$student[1]['sex'] = 'male';
+$student[1]['details'] = [
+    'full name' => 'Leman Al-Khatib',
+    'address'   => 'Lot 235, Jalan Tak Jumpa, Klang'
+];
+$student[2]['name'] = 'vanya';
+$student[2]['age'] = 25;
+$student[2]['sex'] = 'female';
+$student[2]['details'] = [
+    'full name' => 'Vanya Ang',
+    'address'   => 'Rumah no 7 belakang kilang ais lama, Loq Staq.'
+];
+
+$db->set( 'student', $student );
+
+// Retrieve and display data.
+$array = $db->get( 'student' );
+print_r( $array );
+
+// Retrieve and display item data.
+$db->get( 'student' )['name'];
+
+// Find data.
+$results = $db->find( 'student', 'borhan' );
+
+// Find and retrieve data using wildcard.
+$results = $db->find( 'student', 'bor*' );
+
+// Find and retrieve data with item and value.
+$results = $db->find( 'student', [ 'name','borhan' ] );
+
+// Find and retrieve data with item and value using wildcard.
+$results = $db->find( 'student', [ '*me','*nya*' ] );
+
+// Store data with expiry time.
+$db->set( 'lock-file', 'proc.php', strtotime( '+5 minutes' ) );
+
+// Store binary data directly from file.
+$db->set( 'happy.png', 'file:///pathtoaimge/happ.png' );
+
+// Retrieve and display binary data. By default will return as encoded data.
+echo $db->get( 'happy.png' );
+
+// Retrieve and display binary oiginal data.
+echo $db->blob()->get( 'happy.png' );
+
+// Check if key exists, retrieve and display meta data.
+if ( $db->exists( 'happy.png' ) ) {
+    print_r( $db->meta()->get( 'happy.png' ) );
+}
+
 ```
 
 
@@ -96,15 +163,18 @@ You can configure and change default MonoDB options.
 Usage Example (all options)
 
 ```php
-$db = new MonoDB([
-    'path'        => 'path/to/data/dir',
-    'dbname'      => 'monodb0',
-    'key_length'  => 50,
-    'blob_size'   => 5000000,
-    'key_expiry'  => 0,
-    'perm_dir'    => 0755,
-    'perm_file'   => 0644 
-]);
+$db = new MonoDB(
+    [
+     	'path'        => 'path/to/data/dir',
+        'dbname'      => 'monodb0',
+        'key_length'  => 50,
+        'blob_size'   => 5000000,
+        'key_expiry'  => 0,
+        'perm_dir'    => 0755,
+        'perm_file'   => 0644
+    ]
+);
+
 ```
 
 Name|Type|Default Value|Description
@@ -120,7 +190,7 @@ Name|Type|Default Value|Description
 
 ## Database Methods
 
-```php
+```
 $db = new MonoDB\MonoDB($config);
 $db->Method();
 ```
@@ -169,7 +239,7 @@ $db->set('mysqlres', $result, strtotime('+1 minute') );
 
 ## Left Chain Methods *(optional)*
 
-```php
+```
 $db = new MonoDB\MonoDb($config);
 $db->Chain()->Method();
 ```
