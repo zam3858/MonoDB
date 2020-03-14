@@ -122,7 +122,7 @@ $array = $db->get( 'student' );
 print_r( $array );
 
 // Retrieve and display index value.
-$db->get( 'student' )['name'];
+$db->get( 'student' )[0]['name'];
 
 // Find data.
 $results = $db->find( 'student', 'borhan' );
