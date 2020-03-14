@@ -140,7 +140,7 @@ $results = $db->find( 'student', [ '*me','*nya*' ] );
 $db->set( 'lock-file', 'proc.php', strtotime( '+5 minutes' ) );
 
 // Store binary data directly from file.
-$db->set( 'happy.png', 'file:///pathtoaimge/happ.png' );
+$db->set( 'happy.png', 'file:///pathtoaimge/happy.png' );
 
 // Retrieve and display binary data. By default will return as encoded data.
 echo $db->get( 'happy.png' );
