@@ -687,7 +687,7 @@ class MonoDB {
         $key = $this->sanitize_key( $key );
         $file = $this->key_path( $key );
 
-        //$data = $this->fetch_file( $data, $extra_meta );
+        $data = $this->fetch_file( $data, $extra_meta );
 
         $meta = [
             'key' => $key,
