@@ -121,7 +121,7 @@ $db->set( 'student', $student );
 $array = $db->get( 'student' );
 print_r( $array );
 
-// Retrieve and display item data.
+// Retrieve and display index value.
 $db->get( 'student' )['name'];
 
 // Find data.
@@ -130,10 +130,10 @@ $results = $db->find( 'student', 'borhan' );
 // Find and retrieve data using wildcard.
 $results = $db->find( 'student', 'bor*' );
 
-// Find and retrieve data with item and value.
+// Find and retrieve data with index and value.
 $results = $db->find( 'student', [ 'name','borhan' ] );
 
-// Find and retrieve data with item and value using wildcard.
+// Find and retrieve data with index and value using wildcard.
 $results = $db->find( 'student', [ '*me','*nya*' ] );
 
 // Store data with expiry time.
