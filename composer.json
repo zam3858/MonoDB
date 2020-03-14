@@ -27,7 +27,7 @@
     },
     "scripts": {
         "format-code": [
-            "./vendor/bin/phpcbf ./src/"
+            "./bin/phpcbf.sh"
         ]
     }
 

@@ -39,6 +39,7 @@ class MonoDB {
      * Initialize the class and set its properties.
      */
     public function __construct( $options = [] ) {
+        $this->check_dependencies();
         $this->data_path = $this->normalize_path( getcwd().'/' );
         $this->db_path = $this->data_path.'monodb0/';
         $this->options( $options );
@@ -53,6 +54,19 @@ class MonoDB {
     public function __destruct() {
         $this->errors = [];
         return true;
+    }
+
+    private function check_dependencies() {
+        $php_version = '5.6'; 
+        if ( version_compare(PHP_VERSION, $php_version, '<') ) {
+            throw new \Exception("MonoDB requires PHP Version ".$php_version." and above.");
+        }
+
+        foreach(['ctype','json'] as $ext) {
+            if ( !extension_loaded($ext) ) {
+                throw new \Exception("MonoDB requires ".$ext." extension.");
+            }
+        }
     }
 
     /**
@@ -235,7 +249,7 @@ class MonoDB {
      * @access private
      */
     private function is_num( $num ) {
-        return preg_match( '@^\d+$@', $num );
+        return preg_match( '@^\d+$@', (string)$num );
     }
 
     /**
@@ -244,7 +258,7 @@ class MonoDB {
      * @access private
      */
     private function is_wildcard( $string ) {
-        return $this->has_with( $string, [ '*', '?' ] );
+        return $this->has_with( (string)$string, [ '*', '?' ] );
     }
 
     /**
@@ -253,7 +267,7 @@ class MonoDB {
      * @access private
      */
     private function is_multi_array( $array ) {
-        foreach ( $array as $value ) {
+        foreach ( (array)$array as $value ) {
             if ( is_array( $value ) ) {
                 return true;
             }
@@ -293,16 +307,10 @@ class MonoDB {
      * @access private
      */
     private function create_data_dir() {
-        $ok = true;
-        try {
-            if ( ! is_dir( $this->db_path ) && ! mkdir( $this->db_path, $this->perm_dir, true ) ) {
-                $ok = false;
-            }
-        } catch ( \Exception $e ) {
-            $this->catch_error( __METHOD__, $e->getMessage() );
-            $ok = false;
+        if ( ! is_dir( $this->db_path ) && ! mkdir( $this->db_path, $this->perm_dir, true ) ) {
+            return false;
         }
-        return $ok;
+        return true;
     }
 
     /**
@@ -315,11 +323,7 @@ class MonoDB {
         $pad = base64_decode( $mykey );
         $encrypted = '';
         for ( $i = 0; $i < strlen( $string ); $i++ ) {
-            try {
-                $encrypted .= chr( ord( $string[ $i ] ) ^ ord( $pad[ $i ] ) );
-            } catch ( \Exception $e ) {
-                $this->catch_error( __METHOD__, $e->getMessage() );
-            }
+            $encrypted .= chr( ord( $string[ $i ] ) ^ ord( $pad[ $i ] ) );
         }
         return strtr( base64_encode( $encrypted ), '=/', '$@' );
     }
@@ -335,11 +339,7 @@ class MonoDB {
         $encrypted = base64_decode( strtr( $string, '$@', '=/' ) );
         $decrypted = '';
         for ( $i = 0; $i < strlen( $encrypted ); $i++ ) {
-            try {
-                $decrypted .= chr( ord( $encrypted[ $i ] ) ^ ord( $pad[ $i ] ) );
-            } catch ( \Exception $e ) {
-                $this->catch_error( __METHOD__, $e->getMessage() );
-            }
+            $decrypted .= chr( ord( $encrypted[ $i ] ) ^ ord( $pad[ $i ] ) );
         }
         return $decrypted;
     }
@@ -377,13 +377,9 @@ class MonoDB {
         $path = $this->db_path.$prefix.'/';
         $key = substr( $key, 2 );
 
-        try {
-            if ( ! is_dir( $path ) && mkdir( $path, $this->perm_dir, true ) ) {
-                touch( $path.'index.php' );
-                chmod( $path.'index.php', $this->perm_file );
-            }
-        } catch ( \Exception $e ) {
-            $this->catch_error( __METHOD__, $e->getMessage() );
+        if ( ! is_dir( $path ) && mkdir( $path, $this->perm_dir, true ) ) {
+            touch( $path.'index.php' );
+            chmod( $path.'index.php', $this->perm_file );
         }
 
         return $path.$key.'.php';
@@ -401,12 +397,8 @@ class MonoDB {
                 $regexp_chars = [ '.*', '.' ];
                 $regex = str_replace( $wildcard_chars, $regexp_chars, preg_quote( $match, '@' ) );
 
-                try {
-                    if ( preg_match( '@^'.$regex.'$@is', $string ) ) {
-                        return true;
-                    }
-                } catch ( \Exception $e ) {
-                    $this->catch_error( __METHOD__, $e->getMessage() );
+                if ( preg_match( '@^'.$regex.'$@is', $string ) ) {
+                    return true;
                 }
             }
         }
@@ -549,20 +541,32 @@ class MonoDB {
     }
 
     /**
-     * array_search_r().
+     * array_search_index().
      *
      * @access private
      */
-    private function array_search_r( $needle, $haystack ) {
-        if ( is_array( $haystack ) ) {
-            foreach ( $haystack as $key => $value ) {
-                $current_key = $key;
-                if ( $this->is_wildcard( $needle ) && $this->match_wildcard( $value, $needle ) ) {
-                    return $haystack[ $current_key ];
+    private function array_search_index( $array_data, $index_value, $index_key = '' ) {
+        if ( is_array( $array_data ) ) {
+            foreach ( $array_data as $arr_key => $arr_value ) {
+                $current_key = $arr_key;
+
+                if ( !is_array($arr_value) && !empty($index_key) && $index_key === $current_key ) {
+                    if ( $this->is_wildcard( $index_value ) && !$this->match_wildcard( $arr_value, $index_value ) ) {
+                        continue;
+                    }
+
+                    if ( $index_value !== $arr_value ) {
+                        continue;
+                    }
                 }
-                if ( $needle === $value || ( is_array( $value ) && $this->array_search_r( $needle, $value ) !== false ) ) {
-                    return $haystack[ $current_key ];
+
+                if ( !is_array($arr_value) && $this->is_wildcard( $index_value ) && $this->match_wildcard( $arr_value, $index_value ) ) {
+                    return $array_data[ $current_key ];
                 }
+                if ( ( is_array( $arr_value ) && $this->array_search_index( $arr_value, $index_value, $index_key ) !== false ) || $index_value === $arr_value ) {
+                    return $array_data[ $current_key ];
+                }
+                
             }
         }
         return false;
@@ -574,13 +578,9 @@ class MonoDB {
      * @access private
      */
     private function data_store( $file, $data ) {
-        try {
-            if ( file_put_contents( $file, $data, LOCK_EX ) ) {
-                chmod( $file, $this->perm_file );
-                return true;
-            }
-        } catch ( \Exception $e ) {
-            $this->catch_error( __METHOD__, $e->getMessage() );
+        if ( file_put_contents( $file, $data, LOCK_EX ) ) {
+            chmod( $file, $this->perm_file );
+            return true;
         }
         return false;
     }
@@ -855,46 +855,15 @@ class MonoDB {
                 $data = $this->object_to_array( $data );
                 $is_multi_array = $this->is_multi_array( $data );
                 if ( is_array( $match ) ) {
-                    $k = $match[0];
-                    $v = $match[1];
-
-                    $data_check = $data;
-
-                    check_arr:
-                    foreach ( $data_check as $key => $value ) {
-                        if ( is_array( $value ) ) {
-                            $data_check = $value;
-                            goto check_arr;
-                        }
-                        if ( $key === $k || $func_match_wildcard( $key, $k ) ) {
-                            if ( $value === $v || $func_match_wildcard( $value, $v ) ) {
-                                return ( $is_multi_array ? $data_check : $data );
-                            }
-                        }
-                    }
-                    return false;
+                    return $this->array_search_index($data, $match[1], $match[0]);
                 }
-
-                $data_check = $data;
-
-                check_var:
-                foreach ( $data_check as $key => $value ) {
-                    if ( is_array( $value ) ) {
-                        $data_check = $value;
-                        goto check_var;
-                    }
-                    if ( $value === $match || $func_match_wildcard( $value, $match ) ) {
-                        return ( $is_multi_array ? $data_check : $data );
-                    }
-                }
-
                 return false;
             }
 
             if ( $match === $data || $func_match_wildcard( $data, $match ) ) {
                 return $data;
             }
-		}
+        }
         return false;
     }
 
