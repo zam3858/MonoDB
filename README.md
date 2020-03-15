@@ -199,11 +199,12 @@ Method|Details
 :---|:---
 `set($key, $value, $expiry, $meta)`|<p>`set(string $key, mixed $value, (Opt)int $expiry, (Opt)array $meta)`</p><p>`$key` Only alphanumeric, hyphen, dot and semicolon considered as valid input.<br>`$value` Accept any data type.<br>`$expiry` *(optional)* If set, the key will expires in seconds.<br>`$meta` *(optional)* Manually set additional meta data.</p>Return `key string` if successful, `false` otherwise.
 `get($key)`|<p>`get(string $key)`</p><p>Retrieve data associate with the key `$key`.</p>Return `mixed string` if successful, `false` otherwise.
-`mget($key1, $key2, ...)`|<p>`mget(string $key, string $key2, ...)`</p><p>Retrieve data from multiple keys.</p>Return `array` always successful.
+`mget($key1, $key2, ...)`|<p>`mget(string $key, string $key2, ...)`</p><p>Retrieve data from multiple keys.</p>Return `array string` always successful.
 `delete($key)`|<p>`delete(string $key)`</p><p>Delete data associate with the key`$key`.</p>Return `true` if successful, `false` otherwise.
-`mdelete($key1, $key2, ...)`|<p>`mdelete(string $key, string $key2, ...)`</p><p>Data data using multiple keys.</p>Return `array` always successful.
+`mdelete($key1, $key2, ...)`|<p>`mdelete(string $key, string $key2, ...)`</p><p>Data data using multiple keys.</p>Return `array string` always successful.
 `keys($key)`|<p>`keys((Opt)string $key)`</p><p>Retrieve all available Keys. Optionally retrieve specified `$key` <br>and possible match it using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
 `find($key, $value)`<br>`find($key, [$array_key, $array_value])`|<p>`find(string $key, mixed $value)`</p><p>Retrieve data based on `$value` and possible match it, using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
+`find_all($value)`<br>`find_all([$array_key, $array_value])`|<p>`find_all(mixed $value)`</p>Retrieve data from all keys based on `$value` and possible match it, using wildcard `*key*`.</p>Return `array string` always successful.
 `exists($key)`|<p>`exists(string $key)`</p><p>Check if key `$key` exists and data file is readable.</p>Return `true` if available, `false` otherwise.
 `expire($key, $expiry)`|<p>`expire(string $key, int $expiry)`</p><p>Set expiry time in seconds for existing key.</p>Return `key string` if successful, `false` otherwise.
 `incr($key, $number)`|<p>`incr(string $key, (Opt)int $number)`</p><p>Increments the number stored at key by increment. Automatically increment by one if no number supplied.</p>Return the value of key after the increment.
