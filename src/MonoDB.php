@@ -21,27 +21,30 @@
 */
 namespace MonoDB;
 class MonoDB {
-    private $data_path = '';
-    private $db_path = '';
-    private $db_index = '';
-    private $key_length = 50;
-    private $key_expiry = 0;
-    private $blob_size = 5000000;
-    private $is_blob = false;
-    private $is_meta = false;
-    private $is_encrypt = false;
-    private $is_decrypt = false;
-    private $perm_dir = 0755;
-    private $perm_file = 0644;
+    private $chain_blob = false;
+    private $chain_meta = false;
+    private $chain_encrypt = false;
+    private $chain_decrypt = false;
     private $errors = [];
+    private $config = [];
 
     /**
      * Initialize the class and set its properties.
      */
     public function __construct( $options = [] ) {
         $this->check_dependencies();
-        $this->data_path = $this->normalize_path( getcwd().'/' );
-        $this->db_path = $this->data_path.'monodb0/';
+
+        $root_path = $this->normalize_path( getcwd().'/' );
+        $this->config = [
+            'data_path' => $root_path,
+            'db_path' => $root_path.'monodb0/',
+            'key_length' => 50,
+            'key_expiry' => 0,
+            'blob_size' => 5000000,
+            'perm_dir' => 0755,
+            'perm_file' => 0644
+        ];
+
         $this->options( $options );
         $this->errors = [];
     }
@@ -57,71 +60,73 @@ class MonoDB {
     }
 
     private function check_dependencies() {
-        $php_version = '5.6'; 
-        if ( version_compare(PHP_VERSION, $php_version, '<') ) {
-            throw new \Exception("MonoDB requires PHP Version ".$php_version." and above.");
+        $php_version = '5.6';
+        if ( version_compare( PHP_VERSION, $php_version, '<' ) ) {
+            throw new \Exception( 'MonoDB requires PHP Version '.$php_version.' and above.' );
         }
 
-        foreach(['ctype','json'] as $ext) {
-            if ( !extension_loaded($ext) ) {
-                throw new \Exception("MonoDB requires ".$ext." extension.");
+        foreach ( [ 'ctype','json' ] as $ext ) {
+            if ( ! extension_loaded( $ext ) ) {
+                throw new \Exception( 'MonoDB requires '.$ext.' extension.' );
             }
         }
     }
 
     /**
-     * options().
+     * Set class options and create data dir.
      *
      * @access public
+     * @param array $options
+     * @return object class object
      */
     public function options( $options = [] ) {
-        $this->is_blob = false;
-        $this->is_meta = false;
-        $this->is_encrypt = false;
-        $this->is_decrypt = false;
+        $this->chain_blob = false;
+        $this->chain_meta = false;
+        $this->chain_encrypt = false;
+        $this->chain_decrypt = false;
 
         if ( ! empty( $options ) && is_array( $options ) ) {
             if ( ! empty( $options['path'] ) && is_string( $options['path'] ) ) {
-                $this->data_path = $this->normalize_path( $options['path'].'/' );
+                $this->config['data_path'] = $this->normalize_path( $options['path'].'/' );
             }
 
             if ( ! empty( $options['dbname'] ) && is_string( $options['dbname'] ) ) {
-                $this->db_path = $this->data_path.'/'.$options['dbname'].'/';
+                $this->config['db_path'] = $this->config['data_path'].'/'.$options['dbname'].'/';
             }
 
             if ( ! empty( $options['key_length'] ) && $this->is_num( $options['key_length'] ) ) {
                 $key_length = (int) $options['key_length'];
                 if ( $key_length > 0 ) {
-                    $this->key_length = $key_length;
+                    $this->config['key_length'] = $key_length;
                 }
-                $this->key_length = (int) $options['key_length'];
+                $this->config['key_length'] = (int) $options['key_length'];
             }
 
             if ( ! empty( $options['blob_size'] ) && $this->is_num( $options['blob_size'] ) ) {
                 $blob_size = (int) $options['blob_size'];
                 if ( $blob_size > 0 ) {
-                    $this->blob_size = $blob_size;
+                    $this->config['blob_size'] = $blob_size;
                 }
             }
 
-            if ( ! empty( $options['key_expiry'] ) && $this->is_num( $options['key_expiry'] ) ) {
+            if ( ! empty( $options['key_expiry'] ) && $this->is_time( $options['key_expiry'] ) ) {
                 $key_expiry = (int) $options['key_expiry'];
                 if ( $key_expiry > 0 ) {
-                    $this->key_expiry = $key_expiry;
+                    $this->config['key_expiry'] = $key_expiry;
                 }
             }
 
             if ( ! empty( $options['perm_dir'] ) && $this->is_num( $options['perm_dir'] ) ) {
-                $this->perm_dir = $options['perm_dir'];
+                $this->config['perm_dir'] = $options['perm_dir'];
             }
 
             if ( ! empty( $options['perm_file'] ) && $this->is_num( $options['perm_file'] ) ) {
-                $this->perm_file = $options['perm_file'];
+                $this->config['perm_file'] = $options['perm_file'];
             }
         }
 
-        $this->db_path = $this->normalize_path( $this->db_path );
-        $this->db_index = $this->db_path.'index.php';
+        $this->config['db_path'] = $this->normalize_path( $this->config['db_path'] );
+        $this->config['db_index'] = $this->config['db_path'].'index.php';
         $this->create_data_dir();
 
         return $this;
@@ -171,7 +176,7 @@ class MonoDB {
      */
     private function end_with( $haystack, $needles ) {
         foreach ( (array) $needles as $needle ) {
-            if ( (string) $needle === substr( $haystack, -strlen( $needle ) ) ) {
+            if ( substr( $haystack, -strlen( $needle ) ) === (string) $needle ) {
                 return true;
             }
         }
@@ -211,7 +216,7 @@ class MonoDB {
      * @access private
      */
     private function is_file_writable( $file ) {
-        if ( is_file( $file ) && wp_is_writable( $file ) ) {
+        if ( is_file( $file ) && is_writable( $file ) ) {
             clearstatcache( true, $file );
             return true;
         }
@@ -249,29 +254,21 @@ class MonoDB {
      * @access private
      */
     private function is_num( $num ) {
-        return preg_match( '@^\d+$@', (string)$num );
+        return preg_match( '@^\d+$@', (string) $num );
     }
 
     /**
-     * is_wildcard().
+     * is_time().
      *
      * @access private
      */
-    private function is_wildcard( $string ) {
-        return $this->has_with( (string)$string, [ '*', '?' ] );
-    }
-
-    /**
-     * is_multi_array().
-     *
-     * @access private
-     */
-    private function is_multi_array( $array ) {
-        foreach ( (array)$array as $value ) {
-            if ( is_array( $value ) ) {
+    private function is_time( $num ) {
+        if ( $this->is_num( $num ) && $num < PHP_INT_MAX ) {
+            if ( false !== date( 'Y-m-d H:i:s', (int) $num ) ) {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -307,7 +304,7 @@ class MonoDB {
      * @access private
      */
     private function create_data_dir() {
-        if ( ! is_dir( $this->db_path ) && ! mkdir( $this->db_path, $this->perm_dir, true ) ) {
+        if ( ! is_dir( $this->config['db_path'] ) && ! mkdir( $this->config['db_path'], $this->config['perm_dir'], true ) ) {
             return false;
         }
         return true;
@@ -363,7 +360,7 @@ class MonoDB {
             return md5( $key );
         }
 
-        return substr( $key, 0, $this->key_length );
+        return substr( $key, 0, $this->config['key_length'] );
     }
 
     /**
@@ -374,12 +371,12 @@ class MonoDB {
     private function key_path( $key ) {
         $key = md5( $key );
         $prefix = substr( $key, 0, 2 );
-        $path = $this->db_path.$prefix.'/';
+        $path = $this->config['db_path'].$prefix.'/';
         $key = substr( $key, 2 );
 
-        if ( ! is_dir( $path ) && mkdir( $path, $this->perm_dir, true ) ) {
+        if ( ! is_dir( $path ) && mkdir( $path, $this->config['perm_dir'], true ) ) {
             touch( $path.'index.php' );
-            chmod( $path.'index.php', $this->perm_file );
+            chmod( $path.'index.php', $this->config['perm_file'] );
         }
 
         return $path.$key.'.php';
@@ -391,18 +388,24 @@ class MonoDB {
      * @access private
      */
     private function match_wildcard( $string, $matches ) {
-        foreach ( (array) $matches as $match ) {
-            if ( is_string( $match ) && $this->is_wildcard( $match ) ) {
-                $wildcard_chars = [ '\*', '\?' ];
-                $regexp_chars = [ '.*', '.' ];
-                $regex = str_replace( $wildcard_chars, $regexp_chars, preg_quote( $match, '@' ) );
+        if ( is_string( $string ) ) {
+            foreach ( (array) $matches as $match ) {
+                if ( is_string( $match ) ) {
 
-                if ( preg_match( '@^'.$regex.'$@is', $string ) ) {
-                    return true;
+                    if ( $this->has_with( $match, [ '*', '?' ] ) ) {
+                        $wildcard_chars = [ '\*', '\?' ];
+                        $regexp_chars = [ '.*', '.' ];
+                        $regex = str_replace( $wildcard_chars, $regexp_chars, preg_quote( $match, '@' ) );
+
+                        if ( preg_match( '@^'.$regex.'$@is', $string ) ) {
+                            return true;
+                        }
+                    } elseif ( $string === $match ) {
+                        return true;
+                    }
                 }
             }
         }
-
         return false;
     }
 
@@ -427,11 +430,11 @@ class MonoDB {
     }
 
     /**
-     * data_read_type().
+     * data_type().
      *
      * @access private
      */
-    private function data_read_type( $data ) {
+    private function data_type( $data ) {
         $type = gettype( $data );
 
         switch ( $type ) {
@@ -457,15 +460,17 @@ class MonoDB {
      *
      * @access private
      */
-    private function data_serialize( $data, $type ) {
+    private function data_serialize( $data, $type, &$meta ) {
         switch ( $type ) {
             case 'stdClass':
             case 'object':
             case 'resource':
                 $data = serialize( $data );
+                $meta['serialized'] = strlen( $data );
                 break;
             case 'binary':
                 $data = base64_encode( $data );
+                $meta['encoded'] = strlen( $data );
                 break;
         }
 
@@ -478,8 +483,8 @@ class MonoDB {
      * @access private
      */
     private function data_unserialize( $data, $type ) {
-        $is_blob = $this->is_blob;
-        $this->is_blob = false;
+        $chain_blob = $this->chain_blob;
+        $this->chain_blob = false;
 
         switch ( $type ) {
             case 'stdClass':
@@ -488,7 +493,7 @@ class MonoDB {
                 $data = unserialize( $data );
                 break;
             case 'binary':
-                if ( $is_blob ) {
+                if ( $chain_blob ) {
                     $data = base64_decode( $data );
                 }
                 break;
@@ -498,11 +503,11 @@ class MonoDB {
     }
 
     /**
-     * data_read_size().
+     * data_size().
      *
      * @access private
      */
-    private function data_read_size( $data ) {
+    private function data_size( $data ) {
         return ( is_array( $data ) || is_object( $data ) ? sizeof( (array) $data ) : strlen( $data ) );
     }
 
@@ -545,42 +550,73 @@ class MonoDB {
      *
      * @access private
      */
-    private function array_search_index( $array_data, $index_value, $index_key = '' ) {
+    private function array_search_index( $array_data, $find_value, $find_key = '' ) {
         if ( is_array( $array_data ) ) {
+
             foreach ( $array_data as $arr_key => $arr_value ) {
                 $current_key = $arr_key;
 
-                if ( !is_array($arr_value) && !empty($index_key) && $index_key === $current_key ) {
-                    if ( $this->is_wildcard( $index_value ) && !$this->match_wildcard( $arr_value, $index_value ) ) {
-                        continue;
+                if ( $this->match_wildcard( $arr_value, $find_value )
+                    || ( is_array( $arr_value ) && $this->array_search_index( $arr_value, $find_value, $find_key ) !== false ) ) {
+
+                    // found value
+                    $found = $array_data[ $current_key ];
+
+                    if ( is_array( $found ) && ! empty( $find_key ) ) {
+                        $kv = print_r( $found, 1 );
+
+                        if ( preg_match_all( '@(\s*?Array\n*\(\n+)?\s*\[(.*?)\]\s*=\>\s*@m', $kv, $mm ) ) {
+                            $keys = $mm[2];
+                            foreach ( $keys as $k ) {
+                                if ( $this->match_wildcard( $k, $find_key ) ) {
+                                    return $found;
+                                }
+                            }
+                        }
+                        // null to skip
+                        return null;
                     }
 
-                    if ( $index_value !== $arr_value ) {
-                        continue;
-                    }
+                    return $found;
                 }
-
-                if ( !is_array($arr_value) && $this->is_wildcard( $index_value ) && $this->match_wildcard( $arr_value, $index_value ) ) {
-                    return $array_data[ $current_key ];
-                }
-                if ( ( is_array( $arr_value ) && $this->array_search_index( $arr_value, $index_value, $index_key ) !== false ) || $index_value === $arr_value ) {
-                    return $array_data[ $current_key ];
-                }
-                
             }
         }
         return false;
     }
 
     /**
-     * data_store().
+     * data_save().
      *
      * @access private
      */
-    private function data_store( $file, $data ) {
+    private function data_save( $file, $data ) {
         if ( file_put_contents( $file, $data, LOCK_EX ) ) {
-            chmod( $file, $this->perm_file );
+            chmod( $file, $this->config['perm_file'] );
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * data_update().
+     *
+     * @access private
+     */
+    private function data_update( $key, $data ) {
+        if ( ! empty( $data ) && is_array( $data ) && ! empty( $data['timestamp'] ) ) {
+            if ( $this->exists( $key ) ) {
+                $file = $this->key_path( $key );
+
+                if ( $this->is_file_writable( $file ) ) {
+                    $data['timestamp'] = gmdate( 'Y-m-d H:i:s' ).' UTC';
+
+                    $code = $this->data_code( $data );
+                    if ( $this->data_save( $file, $code ) ) {
+                        $this->set_index( $key, $file, $data );
+                        return $key;
+                    }
+                }
+            }
         }
         return false;
     }
@@ -601,34 +637,12 @@ class MonoDB {
     }
 
     /**
-     * unset_index().
-     *
-     * @access private
-     */
-    private function unset_index( $key ) {
-        $file = $this->db_index;
-        $index = [];
-        if ( file_exists( $file ) ) {
-            $index = $this->data_read( $file );
-            if ( ! empty( $index ) && is_array( $index ) ) {
-                if ( ! empty( $index[ $key ] ) ) {
-                    unset( $index[ $key ] );
-                }
-
-                $code = $this->data_code( $index );
-                return $this->data_store( $file, $code );
-            }
-        }
-        return false;
-    }
-
-    /**
      * set_index().
      *
      * @access private
      */
     private function set_index( $key, $path, $item ) {
-        $file = $this->db_index;
+        $file = $this->config['db_index'];
         $index = [];
         if ( file_exists( $file ) ) {
             $index = $this->data_read( $file );
@@ -641,11 +655,39 @@ class MonoDB {
         if ( ! empty( $item['expiry'] ) ) {
             $index[ $key ]['expiry'] = $item['expiry'];
         }
-        $index[ $key ]['file'] = str_replace( $this->db_path, '', $path );
+        $index[ $key ]['index'] = str_replace( $this->config['db_path'], '', trim($path,'.php') );
         $index[ $key ]['size'] = $item['size'];
         $index[ $key ]['type'] = $item['type'];
+        if ( ! empty( $item['serialized'] ) ) {
+            $index[ $key ]['serialized'] = $item['serialized'];
+        }
+        if ( ! empty( $item['encoded'] ) ) {
+            $index[ $key ]['encoded'] = $item['encoded'];
+        }
         $code = $this->data_code( $index );
-        return $this->data_store( $file, $code );
+        return $this->data_save( $file, $code );
+    }
+
+    /**
+     * unset_index().
+     *
+     * @access private
+     */
+    private function unset_index( $key ) {
+        $file = $this->config['db_index'];
+        $index = [];
+        if ( file_exists( $file ) ) {
+            $index = $this->data_read( $file );
+            if ( ! empty( $index ) && is_array( $index ) ) {
+                if ( ! empty( $index[ $key ] ) ) {
+                    unset( $index[ $key ] );
+                }
+
+                $code = $this->data_code( $index );
+                return $this->data_save( $file, $code );
+            }
+        }
+        return false;
     }
 
     /**
@@ -692,24 +734,24 @@ class MonoDB {
         $meta = [
             'key' => $key,
             'timestamp' => gmdate( 'Y-m-d H:i:s' ).' UTC',
-            'type' => $this->data_read_type( $data ),
-            'size' => $this->data_read_size( $data )
+            'type' => $this->data_type( $data ),
+            'size' => $this->data_size( $data )
         ];
 
         if ( 'binary' === $meta['type'] ) {
             $blob_size = (int) $meta['size'];
-            if ( $blob_size >= $this->blob_size ) {
+            if ( $blob_size >= $this->config['blob_size'] ) {
                 $this->catch_error( __METHOD__, 'Maximum binary size exceeded: '.$blob_size );
                 return false;
             }
         }
 
-        if ( ! empty( $expiry ) && $this->is_num( $expiry ) ) {
+        if ( ! empty( $expiry ) && $this->is_time( $expiry ) ) {
             $expiry = (int) $expiry;
             if ( $expiry > 0 ) {
                 $meta['expiry'] = $expiry;
             }
-        } elseif ( ! empty( $this->key_expiry ) ) {
+        } elseif ( ! empty( $this->config['key_expiry'] ) ) {
             $meta['expiry'] = (int) $this->key_expiry;
         }
 
@@ -717,17 +759,18 @@ class MonoDB {
             $meta = array_merge( $meta, $extra_meta );
         }
 
-        $data = $this->data_serialize( $data, $meta['type'] );
-        if ( false !== $this->is_encrypt && is_string( $this->is_encrypt ) ) {
-            $data = $this->base64_encrypt( $data, $this->is_encrypt );
-            $meta['is_encrypt'] = 1;
+        $data = $this->data_serialize( $data, $meta['type'], $meta );
+        if ( false !== $this->chain_encrypt && is_string( $this->chain_encrypt ) ) {
+            $data = $this->base64_encrypt( $data, $this->chain_encrypt );
+            $meta['chain_encrypt'] = 1;
+            $meta['length'] = strlen( $data );
         }
-        $this->is_encrypt = false;
+        $this->chain_encrypt = false;
 
         $meta['data'] = $data;
         $code = $this->data_code( $meta );
 
-        if ( $this->data_store( $file, $code ) ) {
+        if ( $this->data_save( $file, $code ) ) {
             $this->set_index( $key, $file, $meta );
             return $key;
         }
@@ -745,8 +788,8 @@ class MonoDB {
         $key = $this->sanitize_key( $key );
         $file = $this->key_path( $key );
 
-        $is_meta = $this->is_meta;
-        $this->is_meta = false;
+        $chain_meta = $this->chain_meta;
+        $this->chain_meta = false;
 
         if ( $this->is_file_readable( $file ) ) {
             $meta = $this->data_read( $file );
@@ -764,18 +807,31 @@ class MonoDB {
             }
 
             $data = $meta['data'];
-            if ( false !== $this->is_decrypt && is_string( $this->is_decrypt ) ) {
-                $data = $this->base64_decrypt( $data, $this->is_decrypt );
-                unset( $meta['is_encrypt'] );
+            if ( false !== $this->chain_decrypt && is_string( $this->chain_decrypt ) ) {
+                $data = $this->base64_decrypt( $data, $this->chain_decrypt );
+                unset( $meta['chain_encrypt'] );
             }
-            $this->is_decrypt = false;
+            $this->chain_decrypt = false;
 
             $meta['data'] = $this->data_unserialize( $data, $meta['type'] );
 
-            return ( ! $is_meta ? $meta['data'] : $meta );
+            return ( ! $chain_meta ? $meta['data'] : $meta );
         }
 
         return false;
+    }
+
+    /**
+     * mget().
+     *
+     * @access public
+     */
+    public function mget(...$keys) {
+        $results = [];
+        foreach($keys as $key) {
+            $results[$key] = $this->get($key);
+        }
+        return $results;
     }
 
     /**
@@ -791,6 +847,19 @@ class MonoDB {
             return true;
         }
         return false;
+    }
+
+    /**
+     * mdelete().
+     *
+     * @access public
+     */
+    public function mdelete(...$keys) {
+        $results = [];
+        foreach($keys as $key) {
+            $results[$key] = ( $this->delete($key) ? "true" : "false" );
+        }
+        return $results;
     }
 
     /**
@@ -840,10 +909,6 @@ class MonoDB {
                 return ( 'array' === $type || 'stdClass' === $type );
             };
 
-            $func_match_wildcard = function( $data, $match ) {
-                return ( $this->is_wildcard( $match ) && $this->match_wildcard( $data, $match ) );
-            };
-
             $type = $meta['type'];
             $data = $meta['data'];
 
@@ -853,14 +918,13 @@ class MonoDB {
 
             if ( $func_is_array( $type ) ) {
                 $data = $this->object_to_array( $data );
-                $is_multi_array = $this->is_multi_array( $data );
                 if ( is_array( $match ) ) {
-                    return $this->array_search_index($data, $match[1], $match[0]);
+                    return $this->array_search_index( $data, $match[1], $match[0] );
                 }
                 return false;
             }
 
-            if ( $match === $data || $func_match_wildcard( $data, $match ) ) {
+            if ( $this->match_wildcard( $data, $match ) ) {
                 return $data;
             }
         }
@@ -884,9 +948,9 @@ class MonoDB {
      * @access public
      */
     public function keys( $key = '' ) {
-        $file = $this->db_index;
-        $is_meta = $this->is_meta;
-        $this->is_meta = false;
+        $file = $this->config['db_index'];
+        $chain_meta = $this->chain_meta;
+        $this->chain_meta = false;
 
         if ( $this->is_file_readable( $file ) ) {
             $index = $this->data_read( $file );
@@ -894,8 +958,8 @@ class MonoDB {
                 if ( ! empty( $key ) ) {
                     $rindex = [];
                     foreach ( $index as $k => $v ) {
-                        if ( $key === $k || ( $this->is_wildcard( $key ) && $this->match_wildcard( $k, $key ) ) ) {
-                            if ( $is_meta ) {
+                        if ( $this->match_wildcard( $k, $key ) ) {
+                            if ( $chain_meta ) {
                                 $rindex[ $k ] = $v;
                             } else {
                                 $rindex[] = $k;
@@ -908,7 +972,7 @@ class MonoDB {
                     return false;
                 }
 
-                if ( ! $is_meta ) {
+                if ( ! $chain_meta ) {
                     $index = array_keys( $index );
                 }
 
@@ -919,7 +983,7 @@ class MonoDB {
     }
 
     /**
-     * select().
+     * chain select().
      *
      * @access public
      */
@@ -933,73 +997,102 @@ class MonoDB {
      * @access public
      */
     public function info() {
-
+        $config = (object) $this->config;
+        return [
+            'data_path' => $config->data_path,
+            'db_path'   => $config->db_path,
+            'db_index'  => $config->db_index
+        ];
     }
 
     /**
-     * incr_by().
+     * incr().
      *
      * @access public
      */
-    public function incr_by() {
-
+    public function incr( $key, $num = '' ) {
+        $num = ( ! empty( $num ) ? $num : 1 );
+        $data = $this->get( $key );
+        if ( ! empty( $data ) && $this->is_num( $data ) && $this->is_num( $num ) && $num < PHP_INT_MAX ) {
+            $data = (int) $data + (int) $num;
+            if ( $data < PHP_INT_MAX && $this->set( $key, $data ) ) {
+                return $data;
+            }
+        }
+        return false;
     }
 
     /**
-     * set_meta().
+     * decr().
      *
      * @access public
      */
-    public function decr_by() {
-
+    public function decr( $key, $num = '' ) {
+        $num = ( ! empty( $num ) ? $num : 1 );
+        $data = $this->get( $key );
+        if ( ! empty( $data ) && $this->is_num( $data ) && $this->is_num( $num ) && $num < PHP_INT_MAX ) {
+            $data = (int) $data - (int) $num;
+            if ( $data < PHP_INT_MAX && $this->set( $key, $data ) ) {
+                return $data;
+            }
+        }
+        return false;
     }
 
     /**
-     * set_meta().
+     * expire().
      *
      * @access public
      */
-    public function set_expire( $key, $expiry = 0 ) {
-
+    public function expire( $key, $expiry = 0 ) {
+        $data = $this->meta()->get( $key );
+        if ( ! empty( $data ) && is_array( $data ) && ! empty( $data['key'] ) && ! empty( $expiry ) && $this->is_time( $expiry ) ) {
+            $expiry = (int) $expiry;
+            if ( $expiry > 0 ) {
+                $data['expiry'] = $expiry;
+                return $this->data_update( $key, $data );
+            }
+        }
+        return false;
     }
 
     /**
-     * meta().
+     * chain meta().
      *
      * @access public
      */
     public function meta( $enable = null ) {
-        $this->is_meta = ( is_bool( $enable ) ? $enable : true );
+        $this->chain_meta = ( is_bool( $enable ) ? $enable : true );
         return $this;
     }
 
     /**
-     * blob().
+     * chain blob().
      *
      * @access public
      */
     public function blob( $enable = null ) {
-        $this->is_blob = ( is_bool( $enable ) ? $enable : true );
+        $this->chain_blob = ( is_bool( $enable ) ? $enable : true );
         return $this;
     }
 
     /**
-     * encrypt().
+     * chain encrypt().
      *
      * @access public
      */
     public function encrypt( $secret = '' ) {
-        $this->is_encrypt = $secret;
+        $this->chain_encrypt = $secret;
         return $this;
     }
 
     /**
-     * decrypt().
+     * chain decrypt().
      *
      * @access public
      */
     public function decrypt( $secret = '' ) {
-        $this->is_decrypt = $secret;
+        $this->chain_decrypt = $secret;
         return $this;
     }
 }

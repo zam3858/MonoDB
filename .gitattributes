@@ -9,4 +9,4 @@
 /phpdoc.dist.xml export-ignore
 /test export-ignore
 /travis.phpunit.xml.dist export-ignore
-/bin/
+/bin export-ignore
