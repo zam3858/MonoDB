@@ -205,8 +205,11 @@ Method|Details
 `keys($key)`|<p>`keys((Opt)string $key)`</p><p>Retrieve all available Keys. Optionally retrieve specified `$key` <br>and possible match it using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
 `find($key, $value)`<br>`find($key, [$array_key, $array_value])`|<p>`find(string $key, mixed $value)`</p><p>Retrieve data based on `$value` and possible match it, using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
 `exists($key)`|<p>`exists(string $key)`</p><p>Check if key `$key` exists and data file is readable.</p>Return `true` if available, `false` otherwise.
-`flush()`|<p>`flush()`</p>Flush database, delete all keys.
 `expire($key, $expiry)`|<p>`expire(string $key, int $expiry)`</p><p>Set expiry time in seconds for existing key.</p>Return `key string` if successful, `false` otherwise.
+`incr($key, $number)`|<p>`incr(string $key, (Opt)int $number)`</p><p>Increments the number stored at key by increment. Automatically increment by one if no number supplied.</p>Return the value of key after the increment.
+`decr($key, $number)`|<p>`decr(string $key, (Opt)int $number)`</p><p>Decrements the number stored at key by decrement. Automatically decrement by one if no number supplied.</p>Return the value of key after the decrement.
+`flush()`|<p>`flush()`</p>Flush database, delete all keys.
+`info()`|<p>`flush()`</p>Display library information.
 
 Example:
 - Store image file
