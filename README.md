@@ -41,7 +41,7 @@ Load library directly from package directory.
 require 'vendor/nawawi/monodb/MonoDB.php';
 ```
 
-Alternatively, if you're not using Composer, download the files and copy the contents of the MonoDB folder into one of the include_path directories specified in your PHP configuration and load MonoDB class file manually:
+Alternatively, if you're not using Composer, download the [files](https://github.com/nawawi/MonoDB/releases) and copy the contents of the MonoDB folder into one of the include_path directories specified in your PHP configuration and load MonoDB class file manually:
 
 ```php
 use MonoDB\MonoDB;
