@@ -258,6 +258,15 @@ class MonoDB {
     }
 
     /**
+     * is_int().
+     *
+     * @access private
+     */
+    private function is_int( $num ) {
+        return preg_match( '@^(\-)?\d+$@', (string) $num );
+    }
+
+    /**
      * is_time().
      *
      * @access private
@@ -577,7 +586,7 @@ class MonoDB {
                         return null;
                     }
 
-                    return $found;
+                    return ( is_array($found) ? $found : [$current_key=>$found] );
                 }
             }
         }
@@ -655,7 +664,7 @@ class MonoDB {
         if ( ! empty( $item['expiry'] ) ) {
             $index[ $key ]['expiry'] = $item['expiry'];
         }
-        $index[ $key ]['index'] = str_replace( $this->config['db_path'], '', trim($path,'.php') );
+        $index[ $key ]['index'] = str_replace( $this->config['db_path'], '', trim( $path, '.php' ) );
         $index[ $key ]['size'] = $item['size'];
         $index[ $key ]['type'] = $item['type'];
         if ( ! empty( $item['serialized'] ) ) {
@@ -826,10 +835,10 @@ class MonoDB {
      *
      * @access public
      */
-    public function mget(...$keys) {
+    public function mget( ...$keys ) {
         $results = [];
-        foreach($keys as $key) {
-            $results[$key] = $this->get($key);
+        foreach ( $keys as $key ) {
+            $results[ $key ] = $this->get( $key );
         }
         return $results;
     }
@@ -854,10 +863,10 @@ class MonoDB {
      *
      * @access public
      */
-    public function mdelete(...$keys) {
+    public function mdelete( ...$keys ) {
         $results = [];
-        foreach($keys as $key) {
-            $results[$key] = ( $this->delete($key) ? "true" : "false" );
+        foreach ( $keys as $key ) {
+            $results[ $key ] = ( $this->delete( $key ) ? 'true' : 'false' );
         }
         return $results;
     }
@@ -881,11 +890,11 @@ class MonoDB {
     }
 
     /**
-     * find().
+     * _find().
      *
-     * @access public
+     * @access private
      */
-    public function find( $key, $match ) {
+    private function _find_helper( $key, $match ) {
         $meta = $this->meta()->get( $key );
         if ( ! empty( $meta ) && is_array( $meta ) ) {
 
@@ -919,9 +928,13 @@ class MonoDB {
             if ( $func_is_array( $type ) ) {
                 $data = $this->object_to_array( $data );
                 if ( is_array( $match ) ) {
-                    return $this->array_search_index( $data, $match[1], $match[0] );
+                    $found = $this->array_search_index( $data, $match[1], $match[0] );
+                    return ( !empty($found) ? $found : false );
                 }
-                return false;
+
+                // single
+                $found = $this->array_search_index( $data, $match );
+                return ( !empty($found) ? $found : false );
             }
 
             if ( $this->match_wildcard( $data, $match ) ) {
@@ -929,6 +942,37 @@ class MonoDB {
             }
         }
         return false;
+    }
+
+    /**
+     * find_all().
+     *
+     * @access public
+     */
+    public function find_all( $match ) {
+        $results = [];
+        $keys = $this->keys();
+        if ( !empty($keys) && is_array($keys) ) {
+            foreach($keys as $key) {
+                $found = $this->_find_helper($key, $match);
+                if ( !empty($found) ) {
+                    $results[$key] = $found;
+                }
+            }
+        }
+        return $results;
+    }
+
+    /**
+     * find().
+     *
+     * @access public
+     */
+    public function find( $key, $match ) {
+        if ( '*' === $key ) {
+            return $this->find_all($match);
+        }
+        return $this->_find_helper($key, $match);
     }
 
     /**
@@ -1012,11 +1056,20 @@ class MonoDB {
      */
     public function incr( $key, $num = '' ) {
         $num = ( ! empty( $num ) ? $num : 1 );
-        $data = $this->get( $key );
-        if ( ! empty( $data ) && $this->is_num( $data ) && $this->is_num( $num ) && $num < PHP_INT_MAX ) {
-            $data = (int) $data + (int) $num;
-            if ( $data < PHP_INT_MAX && $this->set( $key, $data ) ) {
-                return $data;
+        if ( $this->exists( $key ) ) {
+            $data = $this->get( $key );
+            if ( ! empty( $data ) && $this->is_int( $data ) && $this->is_int( $num ) ) {
+                $data = (int) $data + (int) $num;
+                if ( $data < 0 ) {
+                    $data = 1;
+                }
+                if ( $this->set( $key, $data ) ) {
+                    return $data;
+                }
+            }
+        } else {
+            if ( false !== $this->set( $key, 1 ) ) {
+                return 1;
             }
         }
         return false;
@@ -1029,11 +1082,20 @@ class MonoDB {
      */
     public function decr( $key, $num = '' ) {
         $num = ( ! empty( $num ) ? $num : 1 );
-        $data = $this->get( $key );
-        if ( ! empty( $data ) && $this->is_num( $data ) && $this->is_num( $num ) && $num < PHP_INT_MAX ) {
-            $data = (int) $data - (int) $num;
-            if ( $data < PHP_INT_MAX && $this->set( $key, $data ) ) {
-                return $data;
+        if ( $this->exists( $key ) ) {
+            $data = $this->get( $key );
+            if ( ! empty( $data ) && $this->is_int( $data ) && $this->is_int( $num ) ) {
+                $data = (int) $data - (int) $num;
+                if ( $data < 0 ) {
+                    $data = 0;
+                }
+                if ( $this->set( $key, $data ) ) {
+                    return $data;
+                }
+            }
+        } else {
+            if ( false !== $this->set( $key, 0 ) ) {
+                return 0;
             }
         }
         return false;
