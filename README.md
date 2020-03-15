@@ -197,11 +197,13 @@ $db->Method();
 
 Method|Details
 :---|:---
-`set($key, $value, $expiry)`|<p>`set(string $key, mixed $value, (Opt)int $expiry)`</p><p>`$key` Only alphanumeric, hyphen, dot and semicolon considered as valid input.<br>`$value` Accept any data type.<br>`$expiry` *(optional)* If set, the key will expires in seconds.</p>Return `key string` if successful, `false` otherwise.
+`set($key, $value, $expiry, $meta)`|<p>`set(string $key, mixed $value, (Opt)int $expiry, (Opt)array $meta)`</p><p>`$key` Only alphanumeric, hyphen, dot and semicolon considered as valid input.<br>`$value` Accept any data type.<br>`$expiry` *(optional)* If set, the key will expires in seconds.<br>`$meta` *(optional)* Manually set additional meta data.</p>Return `key string` if successful, `false` otherwise.
 `get($key)`|<p>`get(string $key)`</p><p>Retrieve data associate with the key `$key`.</p>Return `mixed string` if successful, `false` otherwise.
+`mget($key1, $key2, ...)`|<p>`mget(string $key, string $key2, ...)`</p><p>Retrieve data from multiple keys.</p>Return `array` always successful.
 `delete($key)`|<p>`delete(string $key)`</p><p>Delete data associate with the key`$key`.</p>Return `true` if successful, `false` otherwise.
-`keys($key)`|<p>`keys((Optional)string $key)`</p><p>Retrieve all available Keys. Optionally retrieve specified `$key` <br>and possible match it using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
-`find($key, $value)`|<p>`find(string $key, string $value)`</p><p>Retrieve data based on `$value` and possible match it, using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
+`mdelete($key1, $key2, ...)`|<p>`mdelete(string $key, string $key2, ...)`</p><p>Data data using multiple keys.</p>Return `array` always successful.
+`keys($key)`|<p>`keys((Opt)string $key)`</p><p>Retrieve all available Keys. Optionally retrieve specified `$key` <br>and possible match it using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
+`find($key, $value)`<br>`find($key, [$array_key, $array_value])`|<p>`find(string $key, mixed $value)`</p><p>Retrieve data based on `$value` and possible match it, using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
 `exists($key)`|<p>`exists(string $key)`</p><p>Check if key `$key` exists and data file is readable.</p>Return `true` if available, `false` otherwise.
 `flush()`|<p>`flush()`</p>Flush database, delete all keys.
 
@@ -247,6 +249,7 @@ $db->Chain()->Method();
 Chain Method|Details
 :---|:---
 `options($config)`|<p>`options(array $config)`</p>Set database options.
+`select($dbname)`|<p>`select(string $dbname)`</p>Change database name.
 `meta()`|<p>`meta()`</p>Retrieve key meta data.
 `blob()`|<p>`blob()`</p>Output data as binary if data type of Key is binary. By default MonoDB return as base64 encoded data for safety reason.
 `encrypt($secret)`|<p>`encrypt(string $secret)`</p>Perform data encryption.
