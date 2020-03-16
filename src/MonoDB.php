@@ -27,6 +27,8 @@ class MonoDB {
     private $chain_decrypt = false;
     private $errors = [];
     private $config = [];
+    public $hook_path = '';
+    public $current_path = '';
 
     /**
      * Initialize the class and set its properties.
@@ -34,10 +36,12 @@ class MonoDB {
     public function __construct( $options = [] ) {
         $this->check_dependencies();
 
-        $root_path = $this->normalize_path( getcwd().'/' );
+        $this->hook_path = dirname( realpath( __FILE__ ) ).'/';
+        $this->current_path = $this->normalize_path( getcwd().'/' );
+
         $this->config = [
-            'data_path' => $root_path,
-            'db_path' => $root_path.'monodb0/',
+            'data_path' => $this->current_path,
+            'db_path' => $this->current_path.'monodb0/',
             'key_length' => 50,
             'key_expiry' => 0,
             'blob_size' => 5000000,
@@ -59,17 +63,23 @@ class MonoDB {
         return true;
     }
 
+    /**
+     * Dependecnises check for non composer installation.
+     *
+     * @return mixed Throw error when failed, true otherwise.
+     */
     private function check_dependencies() {
-        $php_version = '5.6';
+        $php_version = '7.1';
         if ( version_compare( PHP_VERSION, $php_version, '<' ) ) {
             throw new \Exception( 'MonoDB requires PHP Version '.$php_version.' and above.' );
         }
 
-        foreach ( [ 'ctype','json' ] as $ext ) {
+        foreach ( [ 'ctype', 'json' ] as $ext ) {
             if ( ! extension_loaded( $ext ) ) {
                 throw new \Exception( 'MonoDB requires '.$ext.' extension.' );
             }
         }
+        return true;
     }
 
     /**
@@ -128,7 +138,6 @@ class MonoDB {
         $this->config['db_path'] = $this->normalize_path( $this->config['db_path'] );
         $this->config['db_index'] = $this->config['db_path'].'index.php';
         $this->create_data_dir();
-
         return $this;
     }
 
@@ -272,7 +281,7 @@ class MonoDB {
      * @access private
      */
     private function is_time( $num ) {
-        if ( $this->is_num( $num ) && $num < PHP_INT_MAX ) {
+        if ( $this->is_num( $num ) && $num > 0 && $num < PHP_INT_MAX ) {
             if ( false !== date( 'Y-m-d H:i:s', (int) $num ) ) {
                 return true;
             }
@@ -291,7 +300,24 @@ class MonoDB {
             return true;
         }
 
-        if ( preg_match( '@^stdClass\:\:@', var_export( $object, 1 ) ) ) {
+        if ( preg_match( '@^stdClass\:\:__set_state\(.*@', \var_export( $object, 1 ) ) ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * is_closure().
+     *
+     * @access private
+     */
+    private function is_closure( $object ) {
+        if ( $object instanceof Closure ) {
+            return true;
+        }
+
+        if ( preg_match( '@^Closure\:\:__set_state\(.*@', \var_export( $object, 1 ) ) ) {
             return true;
         }
 
@@ -355,20 +381,11 @@ class MonoDB {
      *
      * @access private
      */
-    private function sanitize_key( $key ) {
-        if ( is_array( $key ) || is_object( $key ) || is_resource( $key ) ) {
-            return md5( serialize( $key ) );
-        }
-
-        if ( $this->is_binary( $key ) ) {
-            return md5( base64_encode( $key ) );
-        }
-
+    private function sanitize_key( string $key ) {
         $key_r = preg_replace( '@[^A-Za-z0-9.-:]@', '', $key );
         if ( $key_r !== $key ) {
-            return md5( $key );
+            $key = md5( $key );
         }
-
         return substr( $key, 0, $this->config['key_length'] );
     }
 
@@ -450,6 +467,8 @@ class MonoDB {
             case 'object':
                 if ( $this->is_stdclass( $data ) ) {
                     $type = 'stdClass';
+                } elseif ( $this->is_closure( $data ) ) {
+                    $type = 'closure';
                 }
                 break;
             case 'string':
@@ -465,47 +484,27 @@ class MonoDB {
     }
 
     /**
-     * data_serialize().
+     * data_blob_encode().
      *
      * @access private
      */
-    private function data_serialize( $data, $type, &$meta ) {
-        switch ( $type ) {
-            case 'stdClass':
-            case 'object':
-            case 'resource':
-                $data = serialize( $data );
-                $meta['serialized'] = strlen( $data );
-                break;
-            case 'binary':
-                $data = base64_encode( $data );
-                $meta['encoded'] = strlen( $data );
-                break;
-        }
-
+    private function data_blob_encode( $data, $type, &$meta ) {
+        $data = base64_encode( $data );
+        $meta['encoded'] = strlen( $data );
         return $data;
     }
 
     /**
-     * data_unserialize().
+     * data_blob_decode().
      *
      * @access private
      */
-    private function data_unserialize( $data, $type ) {
+    private function data_blob_decode( $data, $type ) {
         $chain_blob = $this->chain_blob;
         $this->chain_blob = false;
 
-        switch ( $type ) {
-            case 'stdClass':
-            case 'object':
-            case 'resource':
-                $data = unserialize( $data );
-                break;
-            case 'binary':
-                if ( $chain_blob ) {
-                    $data = base64_decode( $data );
-                }
-                break;
+        if ( $chain_blob ) {
+            $data = base64_decode( $data );
         }
 
         return $data;
@@ -527,31 +526,17 @@ class MonoDB {
      */
     private function data_code( $data ) {
         $code = '<?php'.PHP_EOL;
-        $code .= 'return '.$this->array_export( $data ).';'.PHP_EOL;
+        $code .= 'return '.$this->export_var( $data ).';'.PHP_EOL;
         return $code;
     }
 
     /**
-     * array_export().
+     * var_export().
      *
      * @access private
      */
-    private function array_export( $data ) {
-        if ( ! is_array( $data ) ) {
-            return '[]';
-        }
-
-        $data = $this->object_to_array( $data );
-        $data_e = var_export( $data, true );
-        $data_e = preg_replace( '/^([ ]*)(.*)/m', '$1$1$2', $data_e );
-        $data_r = preg_split( "/\r\n|\n|\r/", $data_e );
-
-        $data_r = preg_replace( [ '/\s*array\s\($/', '/\)(,)?$/', '/\s=>\s$/' ], [ null, ']$1', ' => [' ], $data_r );
-        $data_r = join( PHP_EOL, array_filter( [ '[' ] + $data_r ) );
-        if ( '[' === $data_r ) {
-            $data_r = '[]';
-        }
-        return $data_r;
+    private function export_var( $data ) {
+        return \Symfony\Component\VarExporter\VarExporter::export( $data );
     }
 
     /**
@@ -586,7 +571,7 @@ class MonoDB {
                         return null;
                     }
 
-                    return ( is_array($found) ? $found : [$current_key=>$found] );
+                    return ( is_array( $found ) ? $found : [ $current_key => $found ] );
                 }
             }
         }
@@ -734,7 +719,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function set( $key, $data, $expiry = 0, $extra_meta = [] ) {
+    public function set( string $key, $data, $expiry = 0, $extra_meta = [] ) {
         $key = $this->sanitize_key( $key );
         $file = $this->key_path( $key );
 
@@ -747,12 +732,20 @@ class MonoDB {
             'size' => $this->data_size( $data )
         ];
 
+        if ( 'closure' === $meta['type'] || 'resource' === $meta['type'] ) {
+            $this->catch_error( __METHOD__, 'Data type not supported: '.$meta['type'] );
+            return false;
+        }
+
         if ( 'binary' === $meta['type'] ) {
             $blob_size = (int) $meta['size'];
             if ( $blob_size >= $this->config['blob_size'] ) {
                 $this->catch_error( __METHOD__, 'Maximum binary size exceeded: '.$blob_size );
                 return false;
             }
+
+            $data = base64_encode( $data );
+            $meta['encoded'] = strlen( $data );
         }
 
         if ( ! empty( $expiry ) && $this->is_time( $expiry ) ) {
@@ -768,7 +761,6 @@ class MonoDB {
             $meta = array_merge( $meta, $extra_meta );
         }
 
-        $data = $this->data_serialize( $data, $meta['type'], $meta );
         if ( false !== $this->chain_encrypt && is_string( $this->chain_encrypt ) ) {
             $data = $this->base64_encrypt( $data, $this->chain_encrypt );
             $meta['chain_encrypt'] = 1;
@@ -793,7 +785,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function get( $key ) {
+    public function get( string $key ) {
         $key = $this->sanitize_key( $key );
         $file = $this->key_path( $key );
 
@@ -807,7 +799,7 @@ class MonoDB {
                 return false;
             }
 
-            if ( ! empty( $meta['expiry'] ) && $this->is_num( $meta['expiry'] ) ) {
+            if ( ! empty( $meta['expiry'] ) && $this->is_time( $meta['expiry'] ) ) {
                 if ( time() >= (int) $meta['expiry'] ) {
                     $this->delete( $key );
                     $this->catch_error( __METHOD__, 'expired: '.$key );
@@ -822,7 +814,7 @@ class MonoDB {
             }
             $this->chain_decrypt = false;
 
-            $meta['data'] = $this->data_unserialize( $data, $meta['type'] );
+            $meta['data'] = $this->data_blob_decode( $data, $meta['type'] );
 
             return ( ! $chain_meta ? $meta['data'] : $meta );
         }
@@ -848,7 +840,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function delete( $key ) {
+    public function delete( string $key ) {
         $key = $this->sanitize_key( $key );
         $file = $this->key_path( $key );
         if ( unlink( $file ) ) {
@@ -890,11 +882,11 @@ class MonoDB {
     }
 
     /**
-     * _find().
+     * find_data().
      *
      * @access private
      */
-    private function _find_helper( $key, $match ) {
+    private function find_data( string $key, $match ) {
         $meta = $this->meta()->get( $key );
         if ( ! empty( $meta ) && is_array( $meta ) ) {
 
@@ -929,12 +921,12 @@ class MonoDB {
                 $data = $this->object_to_array( $data );
                 if ( is_array( $match ) ) {
                     $found = $this->array_search_index( $data, $match[1], $match[0] );
-                    return ( !empty($found) ? $found : false );
+                    return ( ! empty( $found ) ? $found : false );
                 }
 
                 // single
                 $found = $this->array_search_index( $data, $match );
-                return ( !empty($found) ? $found : false );
+                return ( ! empty( $found ) ? $found : false );
             }
 
             if ( $this->match_wildcard( $data, $match ) ) {
@@ -952,11 +944,11 @@ class MonoDB {
     public function find_all( $match ) {
         $results = [];
         $keys = $this->keys();
-        if ( !empty($keys) && is_array($keys) ) {
-            foreach($keys as $key) {
-                $found = $this->_find_helper($key, $match);
-                if ( !empty($found) ) {
-                    $results[$key] = $found;
+        if ( ! empty( $keys ) && is_array( $keys ) ) {
+            foreach ( $keys as $key ) {
+                $found = $this->find_data( $key, $match );
+                if ( ! empty( $found ) ) {
+                    $results[ $key ] = $found;
                 }
             }
         }
@@ -968,11 +960,11 @@ class MonoDB {
      *
      * @access public
      */
-    public function find( $key, $match ) {
+    public function find( string $key, $match ) {
         if ( '*' === $key ) {
-            return $this->find_all($match);
+            return $this->find_all( $match );
         }
-        return $this->_find_helper($key, $match);
+        return $this->find_data( $key, $match );
     }
 
     /**
@@ -980,7 +972,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function exists( $key ) {
+    public function exists( string $key ) {
         $key = $this->sanitize_key( $key );
         $file = $this->key_path( $key );
         return $this->is_file_readable( $file );
@@ -991,7 +983,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function keys( $key = '' ) {
+    public function keys( string $key = '' ) {
         $file = $this->config['db_index'];
         $chain_meta = $this->chain_meta;
         $this->chain_meta = false;
@@ -1031,7 +1023,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function select( $dbname ) {
+    public function select( string $dbname ) {
         return $this->options( [ 'dbname' => $dbame ] );
     }
 
@@ -1054,7 +1046,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function incr( $key, $num = '' ) {
+    public function incr( string $key, $num = '' ) {
         $num = ( ! empty( $num ) ? $num : 1 );
         if ( $this->exists( $key ) ) {
             $data = $this->get( $key );
@@ -1080,7 +1072,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function decr( $key, $num = '' ) {
+    public function decr( string $key, $num = '' ) {
         $num = ( ! empty( $num ) ? $num : 1 );
         if ( $this->exists( $key ) ) {
             $data = $this->get( $key );
@@ -1106,7 +1098,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function expire( $key, $expiry = 0 ) {
+    public function expire( string $key, $expiry = 0 ) {
         $data = $this->meta()->get( $key );
         if ( ! empty( $data ) && is_array( $data ) && ! empty( $data['key'] ) && ! empty( $expiry ) && $this->is_time( $expiry ) ) {
             $expiry = (int) $expiry;
@@ -1143,7 +1135,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function encrypt( $secret = '' ) {
+    public function encrypt( string $secret = '' ) {
         $this->chain_encrypt = $secret;
         return $this;
     }
@@ -1153,7 +1145,7 @@ class MonoDB {
      *
      * @access public
      */
-    public function decrypt( $secret = '' ) {
+    public function decrypt( string $secret = '' ) {
         $this->chain_decrypt = $secret;
         return $this;
     }

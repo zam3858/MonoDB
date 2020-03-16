@@ -1,34 +1,42 @@
 {
     "name": "nawawi/monodb",
     "description": "A simple flat-file key-value data structure store, used as a database, cache and message broker.",
-    "type": "package",
+    "keywords": [
+        "database",
+        "database-storage",
+        "key-value database",
+        "flat-file",
+        "flat-file-db",
+        "flat-file database",
+        "flatfile database",
+        "flat-file-storage",
+        "monodb",
+        "serverless",
+        "document",
+        "php"
+    ],
+    "type": "library",
     "license": "GPL-3.0",
+    "homepage": "https://monodb.io",
     "authors": [
         {
             "name": "Nawawi Jamili",
-            "email": "nawawi@rutweb.com"
+            "email": "nawawi@rutweb.com",
+            "homepage": "https://rutweb.com"
         }
     ],
     "require": {
-        "php": ">=5.6",
+        "php": ">=7.1.3",
         "ext-ctype": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "symfony/var-exporter": "^5.0"
     },
-    "require-dev": {
-        "dealerdirect/phpcodesniffer-composer-installer": "*",
-        "object-calisthenics/phpcs-calisthenics-rules": "*",
-        "phpcompatibility/php-compatibility": "*",
-        "wp-coding-standards/wpcs": "*"
+    "suggest": {
+        "ext-zend-opcache": "Recommended for better performance"
     },
     "autoload": {
         "psr-4": {
             "MonoDB\\": "src/"
         }
-    },
-    "scripts": {
-        "format-code": [
-            "./bin/phpcbf.sh"
-        ]
     }
-
 }

@@ -1,3 +1,10 @@
-/vendor/
-composer.lock
-phpcs.sh
+!/vendor/
+/vendor/*
+!/vendor/symfony/
+!/vendor/composer/
+!/vendor/autoload.php
+composer*.lock
+composer-dev.json
+*.sh
+CURRENT-DEV
+CURRENT-PROD

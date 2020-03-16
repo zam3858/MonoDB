@@ -20,7 +20,6 @@ MonoDB is an Open Source simple Flat File key-value data structure store, used a
 - float
 - array
 - object
-- resource
 - binary
 - json
 
@@ -46,10 +45,10 @@ Alternatively, if you're not using Composer, download the [files](https://github
 ```php
 use MonoDB\MonoDB;
 
-require 'path/to/MonoDB/src/MonoDB.php';
+require 'path-to-monodb-dir/monodb-load.php';
 ```
 **Minimum Requirement:**
-- PHP 5.6+
+- PHP 7.1+
 - PHP ctype extension
 - PHP json extension
 
@@ -183,7 +182,7 @@ Name|Type|Default Value|Description
 `dbname`|string|monodb0|The directory where the data files are stored.
 `key_length`|int|50|Maximum key length. Larger than this will truncated.
 `blob_size`|int|5000000|Maximum size in byte of binary file can be stored.
-`key_expiry`|int|0|Default key expiry in seconds for all keys.
+`key_expiry`|int|0|Default key expiry in timestamp for all keys.
 `perm_dir`|int|0755|Default Unix directory permission.
 `perm_file`|int|0644|Default Unix file permission.
 
@@ -197,7 +196,7 @@ $db->Method();
 
 Method|Details
 :---|:---
-`set($key, $value, $expiry, $meta)`|<p>`set(string $key, mixed $value, (Opt)int $expiry, (Opt)array $meta)`</p><p>`$key` Only alphanumeric, hyphen, dot and semicolon considered as valid input.<br>`$value` Accept any data type.<br>`$expiry` *(optional)* If set, the key will expires in seconds.<br>`$meta` *(optional)* Manually set additional meta data.</p>Return `key string` if successful, `false` otherwise.
+`set($key, $value, $expiry, $meta)`|<p>`set(string $key, mixed $value, (Opt)int $expiry, (Opt)array $meta)`</p><p>`$key` Only alphanumeric, hyphen, dot and semicolon considered as valid input.<br>`$value` Accept any data type.<br>`$expiry` *(optional)* If set, the key will expire after specified timestamp.<br>`$meta` *(optional)* Manually set additional meta data.</p>Return `key string` if successful, `false` otherwise.
 `get($key)`|<p>`get(string $key)`</p><p>Retrieve data associate with the key `$key`.</p>Return `mixed string` if successful, `false` otherwise.
 `mget($key1, $key2, ...)`|<p>`mget(string $key, string $key2, ...)`</p><p>Retrieve data from multiple keys.</p>Return `array string` always successful.
 `delete($key)`|<p>`delete(string $key)`</p><p>Delete data associate with the key`$key`.</p>Return `true` if successful, `false` otherwise.
@@ -264,7 +263,7 @@ Example:
 - Change dbname
 ```php
 $db = MonoDB\MonoDB();
-$db->options(['dbname'=>'db2'])->set('key','value');
+$db->select('db2')->set('key','value');
 ```
 
 - Encrypt data
