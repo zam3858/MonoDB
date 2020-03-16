@@ -1,24 +1,13 @@
 <?php
 /*
-    MonoDB - A simple flat-file key-value data structure store, used as a database,
-    cache and message broker.
+ * This file is part of the MonoDB package.
+ *
+ * (c) Nawawi Jamili <nawawi@rutweb.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-    Copyright 2020 Nawawi Jamili <nawawi@rutweb.com>
-    All rights reserved.
-
-    MonoDB is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 namespace MonoDB;
 class MonoDB {
     private $chain_blob = false;
@@ -98,6 +87,7 @@ class MonoDB {
         if ( ! empty( $options ) && is_array( $options ) ) {
             if ( ! empty( $options['path'] ) && is_string( $options['path'] ) ) {
                 $this->config['data_path'] = $this->normalize_path( $options['path'].'/' );
+                $this->config['db_path'] = $this->config['data_path'].'monodb0/';
             }
 
             if ( ! empty( $options['dbname'] ) && is_string( $options['dbname'] ) ) {
@@ -241,7 +231,34 @@ class MonoDB {
         if ( is_null( $blob ) || is_integer( $blob ) ) {
             return false;
         }
-        return ! ctype_print( $blob );
+
+        if ( function_exists('ctype_print') ) {
+            return ! ctype_print( $blob );
+        }
+
+        // polyfill ctype_print
+        $func_convert_int_to_char = function($int) {
+            if (!is_int($int)) {
+                return $int;
+            }
+
+            if ($int < -128 || $int > 255) {
+                return (string) $int;
+            }
+
+            if ($int < 0) {
+                $int += 256;
+            }
+
+            return chr($int);
+        };
+
+        $func_ctype_print = function($text) {
+            return ( is_string($text) && '' !== $text && !preg_match('/[^ -~]/', $text) );
+        };
+
+        $text = $func_convert_int_to_char($blob);
+        return !$func_ctype_print($text);
     }
 
     /**
