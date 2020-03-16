@@ -484,33 +484,6 @@ class MonoDB {
     }
 
     /**
-     * data_blob_encode().
-     *
-     * @access private
-     */
-    private function data_blob_encode( $data, $type, &$meta ) {
-        $data = base64_encode( $data );
-        $meta['encoded'] = strlen( $data );
-        return $data;
-    }
-
-    /**
-     * data_blob_decode().
-     *
-     * @access private
-     */
-    private function data_blob_decode( $data, $type ) {
-        $chain_blob = $this->chain_blob;
-        $this->chain_blob = false;
-
-        if ( $chain_blob ) {
-            $data = base64_decode( $data );
-        }
-
-        return $data;
-    }
-
-    /**
      * data_size().
      *
      * @access private
@@ -792,6 +765,9 @@ class MonoDB {
         $chain_meta = $this->chain_meta;
         $this->chain_meta = false;
 
+        $chain_blob = $this->chain_blob;
+        $this->chain_blob = false;
+
         if ( $this->is_file_readable( $file ) ) {
             $meta = $this->data_read( $file );
             if ( ! is_array( $meta ) || empty( $meta ) || empty( $meta['data'] ) ) {
@@ -814,7 +790,11 @@ class MonoDB {
             }
             $this->chain_decrypt = false;
 
-            $meta['data'] = $this->data_blob_decode( $data, $meta['type'] );
+            if ( 'binary' === $meta['type'] && $chain_blob ) {
+                $data = base64_decode( $data );
+            }
+
+            $meta['data'] = $data;
 
             return ( ! $chain_meta ? $meta['data'] : $meta );
         }
