@@ -9,3 +9,6 @@ composer-dev.json
 CURRENT-DEV
 CURRENT-PROD
 .phpunit.result.cache
+!/tests/
+/tests/*
+!/tests/*.php

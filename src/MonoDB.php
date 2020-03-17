@@ -63,11 +63,10 @@ class MonoDB {
             throw new \Exception( 'MonoDB requires PHP Version '.$php_version.' and above.' );
         }
 
-        foreach ( [ 'ctype', 'json' ] as $ext ) {
-            if ( ! extension_loaded( $ext ) ) {
-                throw new \Exception( 'MonoDB requires '.$ext.' extension.' );
-            }
+        if ( ! extension_loaded( 'json' ) ) {
+            throw new \Exception( 'MonoDB requires json extension.' );
         }
+
         return true;
     }
 
