@@ -24,12 +24,13 @@ class ComposerStaticInitab83e689f05eef1be66e4da087ba1a9b
         ),
         'MonoDB\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/src',
+            0 => __DIR__ . '/../..' . '/main',
         ),
     );
 
     public static $classMap = array (
-        'MonoDB\\MonoDB' => __DIR__ . '/../..' . '/src/MonoDB.php',
+        'MonoDB\\Helper' => __DIR__ . '/../..' . '/main/Helper.php',
+        'MonoDB\\MonoDB' => __DIR__ . '/../..' . '/main/MonoDB.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

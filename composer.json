@@ -36,9 +36,9 @@
     },
     "autoload": {
         "psr-4": {
-            "MonoDB\\": "src/"
+            "MonoDB\\": "main/"
         },
-        "classmap": ["src/"]
+        "classmap": ["main/"]
     },
     "extra": {
         "branch-alias": {

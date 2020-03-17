@@ -7,5 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Symfony\\Component\\VarExporter\\' => array($vendorDir . '/symfony/var-exporter'),
-    'MonoDB\\' => array($baseDir . '/src'),
+    'MonoDB\\' => array($baseDir . '/main'),
 );
