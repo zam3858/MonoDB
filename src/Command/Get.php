@@ -19,6 +19,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Get extends Command {
+
     private $console;
     public function __construct( $console ) {
         $this->console = $console;
@@ -61,10 +62,10 @@ class Get extends Command {
         $header = [];
         $row = [];
 
-        if ( ! is_array( $results ) ) {
+        if ( ! \is_array( $results ) ) {
             $header = [ 'Value', 'Length' ];
             $size = Func::get_size( $results );
-            if ( is_string( $results ) && strlen( $results ) > 50 ) {
+            if ( \is_string( $results ) && \strlen( $results ) > 50 ) {
                 $results_r = substr( $results, 0, 50 );
                 if ( $results_r !== $results ) {
                     $results = $results_r.'...';
@@ -72,21 +73,19 @@ class Get extends Command {
             }
             $row[] = [ $results, $size ];
         } else {
-
             if ( $is_meta ) {
-
                 $header = array_keys( $results );
                 $row2 = array_values( $results );
 
                 foreach ( $row2 as $n => $k ) {
-                    if ( is_array( $k ) ) {
+                    if ( \is_array( $k ) ) {
                         $k = array_map(
-                            function( $arr ) {
-                                if ( ! is_array( $arr ) ) {
+                            function ( $arr ) {
+                                if ( ! \is_array( $arr ) ) {
                                     return $arr;
                                 }
                                 foreach ( $arr as $a => $b ) {
-                                    if ( is_string( $b ) && strlen( $b ) > 50 ) {
+                                    if ( \is_string( $b ) && \strlen( $b ) > 50 ) {
                                         $b_r = substr( $b, 0, 50 );
                                         if ( $b_r !== $b ) {
                                             $b = $b_r.'...';
@@ -99,7 +98,7 @@ class Get extends Command {
                             $k
                         );
                         $k = Func::export_var( $k );
-                    } elseif ( is_string( $k ) && strlen( $k ) > 50 ) {
+                    } elseif ( \is_string( $k ) && \strlen( $k ) > 50 ) {
                         $k_r = substr( $k, 0, 50 );
                         if ( $k_r !== $k ) {
                             $k = $k_r.'...';
@@ -111,14 +110,13 @@ class Get extends Command {
 
                 $row[] = $r;
             } else {
-
                 foreach ( $results as $k => $arr ) {
                     if ( empty( $header ) ) {
                         $header = array_keys( $arr );
                     }
                     $row2 = array_values( $arr );
                     foreach ( $row2 as $a => $b ) {
-                        if ( is_array( $b ) ) {
+                        if ( \is_array( $b ) ) {
                             $b = Func::export_var( $b );
                         }
                         $row2[ $a ] = $b;

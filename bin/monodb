@@ -1,7 +1,11 @@
 #!/usr/bin/env php
 <?php
-require_once( realpath( __DIR__.'/../autoload.php') );
+$file = realpath( __DIR__.'/../autoload.php');
+$file = str_replace( '\\', '/', $file );
+
+require_once( $file );
 
 use Monodb\Console;
 $app = new Console();
 $app->run();
+exit(0);

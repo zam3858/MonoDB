@@ -9,12 +9,14 @@
  */
 
 namespace Monodb;
+
 use \Symfony\Component\VarExporter\VarExporter;
 
 class Functions {
+
     public static function has_with( string $haystack, $needles ) {
         foreach ( (array) $needles as $needle ) {
-            if ( false !== \strpos( $haystack, (string) $needle ) ) {
+            if ( false !== strpos( $haystack, (string) $needle ) ) {
                 return true;
             }
         }
@@ -26,7 +28,7 @@ class Functions {
     */
     public static function end_with( string $haystack, $needles ) {
         foreach ( (array) $needles as $needle ) {
-            if ( \substr( $haystack, -\strlen( $needle ) ) === (string) $needle ) {
+            if ( substr( $haystack, -\strlen( $needle ) ) === (string) $needle ) {
                 return true;
             }
         }
@@ -38,7 +40,7 @@ class Functions {
     */
     public static function start_with( string $haystack, $needles ) {
         foreach ( (array) $needles as $needle ) {
-            if ( '' !== $needle && 0 === \strpos( $haystack, $needle ) ) {
+            if ( '' !== $needle && 0 === strpos( $haystack, $needle ) ) {
                 return true;
             }
         }
@@ -49,8 +51,8 @@ class Functions {
     * is_file_readable().
     */
     public static function is_file_readable( string $file ) {
-        if ( \is_file( $file ) && \is_readable( $file ) ) {
-            \clearstatcache( true, $file );
+        if ( is_file( $file ) && is_readable( $file ) ) {
+            clearstatcache( true, $file );
             return true;
         }
         return false;
@@ -60,8 +62,8 @@ class Functions {
     * is_file_writable().
     */
     public static function is_file_writable( string $file ) {
-        if ( \is_file( $file ) && \is_writable( $file ) ) {
-            \clearstatcache( true, $file );
+        if ( is_file( $file ) && is_writable( $file ) ) {
+            clearstatcache( true, $file );
             return true;
         }
         return false;
@@ -91,7 +93,7 @@ class Functions {
     */
     public static function ctype_print( $text ) {
         $text = self::int_to_char( $text );
-        return ( \is_string( $text ) && '' !== $text && ! \preg_match( '/[^ -~]/', $text ) );
+        return ( \is_string( $text ) && '' !== $text && ! preg_match( '/[^ -~]/', $text ) );
     }
 
     /**
@@ -99,11 +101,11 @@ class Functions {
     */
     public static function is_var_binary( $blob ) {
         if ( \is_null( $blob ) || \is_integer( $blob ) ) {
-                return false;
+            return false;
         }
 
-        if ( \function_exists( '\ctype_print' ) ) {
-            return ! \ctype_print( $blob );
+        if ( function_exists( 'ctype_print' ) ) {
+            return ! ctype_print( $blob );
         }
 
         return ! self::ctype_print( $blob );
@@ -113,8 +115,8 @@ class Functions {
     * is_var_json().
     */
     public static function is_var_json( string $string ) {
-        return ( \is_array( \json_decode( $string, true ) )
-            && ( JSON_ERROR_NONE === \json_last_error() ) ? true : false
+        return ( \is_array( json_decode( $string, true ) )
+            && ( JSON_ERROR_NONE === json_last_error() ) ? true : false
         );
     }
 
@@ -122,14 +124,14 @@ class Functions {
     * is_var_num().
     */
     public static function is_var_num( $num ) {
-        return \preg_match( '@^\d+$@', (string) $num );
+        return preg_match( '@^\d+$@', (string) $num );
     }
 
     /**
     * is_var_int().
     */
     public static function is_var_int( $num ) {
-        return \preg_match( '@^(\-)?\d+$@', (string) $num );
+        return preg_match( '@^(\-)?\d+$@', (string) $num );
     }
 
     /**
@@ -137,7 +139,7 @@ class Functions {
     */
     public static function is_var_time( $num ) {
         if ( self::is_var_num( $num ) && $num > 0 && $num < PHP_INT_MAX ) {
-            if ( false !== \date( 'Y-m-d H:i:s', (int) $num ) ) {
+            if ( false !== date( 'Y-m-d H:i:s', (int) $num ) ) {
                 return true;
             }
         }
@@ -149,12 +151,12 @@ class Functions {
     */
     public static function encrypt( string $string, string $epad = '!!$$@#%^&!!' ) {
         $mykey = '!!$'.$epad.'!!';
-        $pad = \base64_decode( $mykey );
+        $pad = base64_decode( $mykey );
         $encrypted = '';
         for ( $i = 0; $i < \strlen( $string ); $i++ ) {
-                $encrypted .= \chr( \ord( $string[ $i ] ) ^ \ord( $pad[ $i ] ) );
+            $encrypted .= \chr( \ord( $string[ $i ] ) ^ \ord( $pad[ $i ] ) );
         }
-        return \strtr( \base64_encode( $encrypted ), '=/', '$@' );
+        return strtr( base64_encode( $encrypted ), '=/', '$@' );
     }
 
     /**
@@ -162,11 +164,11 @@ class Functions {
     */
     public static function decrypt( string $string, string $epad = '!!$$@#%^&!!' ) {
         $mykey = '!!$'.$epad.'!!';
-        $pad = \base64_decode( $mykey );
-        $encrypted = \base64_decode( \strtr( $string, '$@', '=/' ) );
+        $pad = base64_decode( $mykey );
+        $encrypted = base64_decode( strtr( $string, '$@', '=/' ) );
         $decrypted = '';
         for ( $i = 0; $i < \strlen( $encrypted ); $i++ ) {
-                $decrypted .= \chr( \ord( $encrypted[ $i ] ) ^ \ord( $pad[ $i ] ) );
+            $decrypted .= \chr( \ord( $encrypted[ $i ] ) ^ \ord( $pad[ $i ] ) );
         }
         return $decrypted;
     }
@@ -179,7 +181,7 @@ class Functions {
             return true;
         }
 
-        if ( \preg_match( '@^stdClass\:\:__set_state\(.*@', \var_export( $object, 1 ) ) ) {
+        if ( preg_match( '@^stdClass\:\:__set_state\(.*@', var_export( $object, 1 ) ) ) {
             return true;
         }
 
@@ -194,7 +196,7 @@ class Functions {
             return true;
         }
 
-        if ( \preg_match( '@^Closure\:\:__set_state\(.*@', \var_export( $object, 1 ) ) ) {
+        if ( preg_match( '@^Closure\:\:__set_state\(.*@', var_export( $object, 1 ) ) ) {
             return true;
         }
 
@@ -205,7 +207,7 @@ class Functions {
     * strip_scheme().
     */
     public static function strip_scheme( string $string ) {
-        return \preg_replace( '@^(file://|https?://|//)@', '', \trim( $string ) );
+        return preg_replace( '@^(file://|https?://|//)@', '', \trim( $string ) );
     }
 
     /**
@@ -213,13 +215,12 @@ class Functions {
     */
     public static function match_wildcard( string $string, string $matches ) {
         foreach ( (array) $matches as $match ) {
-
             if ( self::has_with( $match, [ '*', '?' ] ) ) {
                 $wildcard_chars = [ '\*', '\?' ];
                 $regexp_chars = [ '.*', '.' ];
-                $regex = \str_replace( $wildcard_chars, $regexp_chars, \preg_quote( $match, '@' ) );
+                $regex = str_replace( $wildcard_chars, $regexp_chars, preg_quote( $match, '@' ) );
 
-                if ( \preg_match( '@^'.$regex.'$@is', $string ) ) {
+                if ( preg_match( '@^'.$regex.'$@is', $string ) ) {
                     return true;
                 }
             } elseif ( $string === $match ) {
@@ -234,8 +235,8 @@ class Functions {
     * normalize_path().
     */
     public static function normalize_path( string $path ) {
-        $path = \str_replace( '\\', '/', $path );
-        return \preg_replace( '@[/]+@', '/', $path.'/' );
+        $path = str_replace( '\\', '/', $path );
+        return preg_replace( '@[/]+@', '/', $path.'/' );
     }
 
     /**
@@ -245,12 +246,12 @@ class Functions {
         $path = self::normalize_path( $path );
 
         if ( self::start_with( $path, '.' ) || ! self::start_with( $path, '/' ) ) {
-            $path = \getcwd().'/'.$path;
+            $path = getcwd().'/'.$path;
         }
 
-        $path = \str_replace( '/./', '/', $path );
+        $path = str_replace( '/./', '/', $path );
         do {
-            $path = \preg_replace( '@/[^/]+/\\.\\./@', '/', $path, 1, $cnt );
+            $path = preg_replace( '@/[^/]+/\\.\\./@', '/', $path, 1, $cnt );
         } while ( $cnt );
 
         return $path;
@@ -260,7 +261,7 @@ class Functions {
     * object_to_array().
     */
     public static function object_to_array( $object ) {
-        return \json_decode( \json_encode( $object ), true );
+        return json_decode( json_encode( $object ), true );
     }
 
     /**
@@ -292,7 +293,7 @@ class Functions {
     * get_size().
     */
     public static function get_size( $data ) {
-        return ( \is_array( $data ) || \is_object( $data ) ? \sizeof( (array) $data ) : \strlen( $data ) );
+        return ( \is_array( $data ) || \is_object( $data ) ? sizeof( (array) $data ) : \strlen( $data ) );
     }
 
     /**

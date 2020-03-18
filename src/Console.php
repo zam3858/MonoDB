@@ -19,6 +19,7 @@ use Monodb\Command\Keys;
 use Monodb\Command\Info;
 
 class Console {
+
     public $options = [];
     public $db = null;
     public function __construct( $options = [] ) {
@@ -28,14 +29,14 @@ class Console {
 
     public function db( $options = [] ) {
         static $inst = null;
-        if ( ! is_object( $inst ) ) {
+        if ( ! \is_object( $inst ) ) {
             $inst = new Monodb( $options );
         }
         return $inst;
     }
 
     public function output_raw( $output, $data ) {
-        $data = ( ! empty( $data ) && is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) ? $data : 'null' ) );
+        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) ? $data : 'null' ) );
         $output->writeln( $data );
     }
 

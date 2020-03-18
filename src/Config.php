@@ -9,9 +9,11 @@
  */
 
 namespace Monodb;
+
 use Monodb\Functions as Func;
 
 class Config {
+
     public $dir = '';
     public $dbdir = '';
     public $dbname = 'monodb0';

@@ -19,6 +19,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Info extends Command {
+
     private $console;
     public function __construct( $console ) {
         $this->console = $console;
@@ -61,25 +62,23 @@ class Info extends Command {
         $header = [];
         $row = [];
 
-        if ( ! is_array( $results ) ) {
+        if ( ! \is_array( $results ) ) {
             $section = ucfirst( $section );
             $header = [ $section ];
             $row[] = [ $results ];
-
         } else {
-
             $header = array_keys( $results );
 
             $row2 = array_values( $results );
             foreach ( $row2 as $n => $k ) {
-                if ( is_array( $k ) ) {
+                if ( \is_array( $k ) ) {
                     $k = array_map(
-                        function( $arr ) {
-                            if ( ! is_array( $arr ) ) {
+                        function ( $arr ) {
+                            if ( ! \is_array( $arr ) ) {
                                 return $arr;
                             }
                             foreach ( $arr as $a => $b ) {
-                                if ( is_string( $b ) && strlen( $b ) > 50 ) {
+                                if ( \is_string( $b ) && \strlen( $b ) > 50 ) {
                                     $b_r = substr( $b, 0, 50 );
                                     if ( $b_r !== $b ) {
                                         $b = $b_r.'...';
@@ -92,7 +91,7 @@ class Info extends Command {
                         $k
                     );
                     $k = Func::export_var( $k );
-                } elseif ( is_string( $k ) && strlen( $k ) > 50 ) {
+                } elseif ( \is_string( $k ) && \strlen( $k ) > 50 ) {
                     $k_r = substr( $k, 0, 50 );
                     if ( $k_r !== $k ) {
                         $k = $k_r.'...';

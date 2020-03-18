@@ -50,7 +50,7 @@ require 'path-to-monodb-dir/autoload.php';
 // Setting the data directory and database name.
 $db = new Monodb(
     [
-        'path'      => 'path/to/data/dir',
+        'dir'       => 'path/to/data/dir',
         'dbname'    => 'monodb0'
     ]
 );

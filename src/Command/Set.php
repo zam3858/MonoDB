@@ -19,6 +19,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Set extends Command {
+
     private $console;
     public function __construct( $console ) {
         $this->console = $console;
