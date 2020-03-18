@@ -32,8 +32,8 @@ class Info extends Command {
 
         $help = $this->console->info( 'args' );
         $this->addArgument( 'section', InputArgument::OPTIONAL, $help->section );
-        $this->addOption( 'raw', 'rw', InputOption::VALUE_NONE, $help->raw );
-        $this->addOption( 'no-box', 'nb', InputOption::VALUE_NONE, $help->nobox );
+        $this->addOption( 'raw', '', InputOption::VALUE_NONE, $help->raw );
+        $this->addOption( 'no-box', '', InputOption::VALUE_NONE, $help->nobox );
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {

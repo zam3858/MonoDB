@@ -34,9 +34,9 @@ class Set extends Command {
         $this->addArgument( 'key', InputArgument::REQUIRED, $help->key );
         $this->addArgument( 'value', InputArgument::REQUIRED, $help->value );
         $this->addArgument( 'expiry', InputArgument::OPTIONAL, $help->expiry );
-        $this->addOption( 'raw', 'rw', InputOption::VALUE_NONE, $help->raw );
-        $this->addOption( 'no-box', 'nb', InputOption::VALUE_NONE, $help->nobox );
-        $this->addOption( 'type', 'tp', InputOption::VALUE_OPTIONAL, $help->type, 'string' );
+        $this->addOption( 'raw', '', InputOption::VALUE_NONE, $help->raw );
+        $this->addOption( 'no-box', '', InputOption::VALUE_NONE, $help->nobox );
+        $this->addOption( 'type', '', InputOption::VALUE_OPTIONAL, $help->type, 'string' );
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {

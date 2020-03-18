@@ -32,9 +32,9 @@ class Keys extends Command {
 
         $help = $this->console->info( 'args' );
         $this->addArgument( 'key', InputArgument::OPTIONAL, $help->key );
-        $this->addOption( 'meta', 'ma', InputOption::VALUE_NONE, $help->meta );
-        $this->addOption( 'raw', 'rw', InputOption::VALUE_NONE, $help->raw );
-        $this->addOption( 'no-box', 'nb', InputOption::VALUE_NONE, $help->nobox );
+        $this->addOption( 'meta', '', InputOption::VALUE_NONE, $help->meta );
+        $this->addOption( 'raw', '', InputOption::VALUE_NONE, $help->raw );
+        $this->addOption( 'no-box', '', InputOption::VALUE_NONE, $help->nobox );
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
