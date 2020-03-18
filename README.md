@@ -27,7 +27,7 @@ MonoDB is an Open Source simple Flat File key-value data structure store, used a
 Use [Composer](http://getcomposer.org/) to install package.
 
 ```sh
-composer require nawawi/monodb:^1.0
+composer require nawawi/monodb:1.0.0.x-dev
 ```
 Load library using composer autoload.
 ```php
