@@ -3,5 +3,5 @@
 require_once( realpath( __DIR__.'/../autoload.php') );
 
 use Monodb\Console;
-$app = new Console( ['dir' => './tests/']);
+$app = new Console();
 $app->run();
