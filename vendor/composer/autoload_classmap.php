@@ -6,6 +6,16 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'MonoDB\\Helper' => $baseDir . '/main/Helper.php',
-    'MonoDB\\MonoDB' => $baseDir . '/main/MonoDB.php',
+    'JsonException' => $vendorDir . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
+    'Monodb\\Command\\Get' => $baseDir . '/src/Command/Get.php',
+    'Monodb\\Command\\Info' => $baseDir . '/src/Command/Info.php',
+    'Monodb\\Command\\Keys' => $baseDir . '/src/Command/Keys.php',
+    'Monodb\\Command\\Set' => $baseDir . '/src/Command/Set.php',
+    'Monodb\\Config' => $baseDir . '/src/Config.php',
+    'Monodb\\Console' => $baseDir . '/src/Console.php',
+    'Monodb\\Functions' => $baseDir . '/src/Functions.php',
+    'Monodb\\Monodb' => $baseDir . '/src/Monodb.php',
+    'Normalizer' => $vendorDir . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
+    'Stringable' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
+    'ValueError' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
 );

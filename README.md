@@ -1,5 +1,3 @@
-![MonoDB](https://repository-images.githubusercontent.com/246608460/c6927300-644c-11ea-83a2-dc441b18c022)
-
 # MonoDB
 MonoDB is an Open Source simple Flat File key-value data structure store, used as a database, cache and message broker.
 
@@ -39,9 +37,7 @@ require 'vendor/autoload.php';
 Alternatively, if you're not using Composer, download the [files](https://github.com/nawawi/MonoDB/releases) and copy the contents of the MonoDB folder into one of the include_path directories specified in your PHP configuration and load MonoDB class file manually:
 
 ```php
-use MonoDB\MonoDB;
-
-require 'path-to-monodb-dir/bootstrap.php';
+require 'path-to-monodb-dir/autoload.php';
 ```
 **Minimum Requirement:**
 - PHP 7.1+
@@ -52,7 +48,7 @@ require 'path-to-monodb-dir/bootstrap.php';
 
 ```php
 // Setting the data directory and database name.
-$db = new MonoDB(
+$db = new Monodb(
     [
         'path'      => 'path/to/data/dir',
         'dbname'    => 'monodb0'
@@ -157,9 +153,9 @@ You can configure and change default MonoDB options.
 Usage Example (all options)
 
 ```php
-$db = new MonoDB(
+$db = new Monodb(
     [
-     	'path'        => 'path/to/data/dir',
+     	'dir'        => 'path/to/data/dir',
         'dbname'      => 'monodb0',
         'key_length'  => 50,
         'blob_size'   => 5000000,
@@ -173,7 +169,7 @@ $db = new MonoDB(
 
 Name|Type|Default Value|Description
 :---|:---|:---|:---
-`path`|string|current directory|The path where the data directory will create.
+`dir`|string|current directory|The directory where the database are stored.
 `dbname`|string|monodb0|The directory where the data files are stored.
 `key_length`|int|50|Maximum key length. Larger than this will truncated.
 `blob_size`|int|5000000|Maximum size in byte of binary file can be stored.
@@ -185,7 +181,7 @@ Name|Type|Default Value|Description
 ## Database Methods
 
 ```
-$db = new MonoDB\MonoDB($config);
+$db = new Monodb\Monodb($config);
 $db->Method();
 ```
 
@@ -209,13 +205,13 @@ Method|Details
 Example:
 - Store image file
 ```php
-$db = new MonoDB\MonoDB();
+$db = new Monodb\Monodb();
 $db->set('image', 'file:///path-to-image/image.jpg', 0, ['mime'=>'image/jpg']);
 ```
 
 - Retrieve image data
 ```php
-$db = new MonoDB\MonoDB();
+$db = new Monodb\Monodb();
 // binary output
 $blob = $db->blob()->get('image');
 
@@ -231,9 +227,9 @@ if ( is_array($blob) ) {
 $mysqli = new mysqli("localhost","dbuser","dbpassword","dbname");
 $result = $mysqli->query("select * from tables");
 
-$db = new MonoDB\MonoDB();
+$db = new Monodb\Monodb();
 // key expires after 1 minutes
-$db->set('mysqlres', $result, strtotime('+1 minute') );
+$db->set('mysqlres', $result, 60 );
 
 ```
 
@@ -241,7 +237,7 @@ $db->set('mysqlres', $result, strtotime('+1 minute') );
 ## Left Chain Methods *(optional)*
 
 ```
-$db = new MonoDB\MonoDb($config);
+$db = new Monodb\Monodb($config);
 $db->Chain()->Method();
 ```
 
@@ -257,7 +253,7 @@ Chain Method|Details
 Example:
 - Change dbname
 ```php
-$db = MonoDB\MonoDB();
+$db = Monodb\Monodb();
 $db->select('db2')->set('key','value');
 ```
 
@@ -287,4 +283,4 @@ Anyone can contribute to MonoDB. Please do so by posting issues when you've foun
 
 ## License
 
-MonoDB is open-sourced software licensed under the [GPL-3.0 license](https://opensource.org/licenses/GPL-3.0).
+MonoDB is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

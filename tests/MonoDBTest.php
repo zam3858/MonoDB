@@ -1,27 +1,27 @@
 <?php
-namespace MonoDB;
+namespace Monodb;
 
 use PHPUnit\Framework\TestCase;
 
-class MonoDBTest extends TestCase {
+class MonodbTest extends TestCase {
     public function testConfig() {
-        $data_path = dirname( realpath( __FILE__ ) ).'/';
-        $db = new MonoDB(
+        $dir = realpath( __DIR__ ).'/';
+        $db = new Monodb(
             [
-                'path' => $data_path
+                'dir' => $dir
             ]
         );
 
-        $input = $db->info()['data_path'];
-        $results = $data_path;
+        $input = $db->info()->dir;
+        $results = $dir;
         $this->assertEquals( $input, $results );
     }
 
     public function testSet() {
-        $data_path = dirname( realpath( __FILE__ ) ).'/';
-        $db = new MonoDB(
+        $dir = realpath( __DIR__ ).'/';
+        $db = new Monodb(
             [
-                'path' => $data_path
+                'dir' => $dir
             ]
         );
         $input = $db->set( 'greeting', 'hello world!' );
@@ -30,10 +30,10 @@ class MonoDBTest extends TestCase {
     }
 
     public function testGet() {
-        $data_path = dirname( realpath( __FILE__ ) ).'/';
-        $db = new MonoDB(
+        $dir = realpath( __DIR__ ).'/';
+        $db = new Monodb(
             [
-                'path' => $data_path
+                'dir' => $dir
             ]
         );
         $input = $db->get( 'greeting' );

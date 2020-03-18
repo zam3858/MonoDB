@@ -1,6 +1,15 @@
 !/vendor/
 /vendor/*
-!vendor/symfony/var-exporter/
+!vendor/symfony/console
+!vendor/symfony/polyfill-intl-grapheme
+!vendor/symfony/polyfill-intl-normalizer
+!vendor/symfony/polyfill-mbstring
+!vendor/symfony/polyfill-php73
+!vendor/symfony/polyfill-php80
+!vendor/symfony/service-contracts
+!vendor/symfony/string
+!vendor/symfony/var-exporter
+!vendor/psr/
 !/vendor/composer/
 !/vendor/autoload.php
 composer*.lock
