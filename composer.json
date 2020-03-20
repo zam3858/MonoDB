@@ -1,6 +1,6 @@
 {
     "name": "nawawi/monodb",
-    "description": "A simple flat-file key-value data structure store, used as a database, cache and message broker.",
+    "description": "A flat-file key-value data structure store, used as a simple database, cache and message broker.",
     "keywords": [
         "database",
         "database-storage",
