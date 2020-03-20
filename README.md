@@ -1,5 +1,5 @@
 # MonoDB
-MonoDB is flate-file key-value data structure store, used as a simple database, cache and message broker.
+MonoDB is flat-file key-value data structure store, used as a simple database, cache and message broker.
 
 
 ## Features
