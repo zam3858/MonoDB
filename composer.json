@@ -16,7 +16,7 @@
         "php"
     ],
     "type": "library",
-    "license": "GPL-3.0",
+    "license": "MIT",
     "homepage": "https://monodb.io",
     "authors": [
         {
