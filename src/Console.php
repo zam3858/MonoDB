@@ -13,15 +13,19 @@ namespace Monodb;
 use Monodb\Monodb;
 use Monodb\Functions as Func;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Helper\Table;
 use Monodb\Command\Set;
 use Monodb\Command\Get;
 use Monodb\Command\Keys;
+use Monodb\Command\Incr;
+use Monodb\Command\Decr;
+use Monodb\Command\Flush;
 use Monodb\Command\Info;
 
 class Console {
-
     public $options = [];
     public $db = null;
+
     public function __construct( $options = [] ) {
         $this->options = $options;
         $this->db = $this->db( $options );
@@ -35,9 +39,34 @@ class Console {
         return $inst;
     }
 
+    public function output_nil( $output ) {
+        self::output_raw( $output, 'nil' );
+    }
+
     public function output_raw( $output, $data ) {
-        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) ? $data : 'null' ) );
+        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) ? $data : 'nil' ) );
         $output->writeln( $data );
+    }
+
+    public static function output_table( $output, $header, $row ) {
+        $header = array_map( 'ucwords', $header );
+
+        $table = new Table( $output );
+        $table->setHeaders( $header );
+        $table->setRows( $row );
+        $table->render();
+    }
+
+    private function get_help_text( $name ) {
+        $file = __DIR__.'/Command/help/'.$name.'.txt';
+        if ( Func::is_file_readable( $file ) ) {
+            $data = file_get_contents( $file );
+            $data = trim( $data );
+            if ( ! empty( $data ) ) {
+                return $data.PHP_EOL;
+            }
+        }
+        return '';
     }
 
     public function info( $name ) {
@@ -45,45 +74,66 @@ class Console {
 
         $data['keys'] = [
             'desc' => 'Displays all keys matching pattern',
-            'help' => ''
+            'help' => $this->get_help_text( $name )
         ];
 
         $data['set'] = [
             'desc' => 'Set key to hold the string value',
-            'help' => "Set key to hold the string value.\nIf key already holds a value, it is overwritten, regardless of its type.\n"
+            'help' => $this->get_help_text( $name )
         ];
 
         $data['get'] = [
-            'desc' => 'Get the value of key.',
-            'help' => 'Get the value of key. If the key does not exist empty is returned.'
+            'desc' => 'Get the value of key',
+            'help' => $this->get_help_text( $name )
+        ];
+
+        $data['incr'] = [
+            'desc' => 'Increments the number stored at key by increment',
+            'help' => $this->get_help_text( $name )
+        ];
+
+        $data['decr'] = [
+            'desc' => 'Decrements the number stored at key by decrement',
+            'help' => $this->get_help_text( $name )
+        ];
+
+        $data['flush'] = [
+            'desc' => 'Delete all available keys',
+            'help' => $this->get_help_text( $name )
         ];
 
         $data['info'] = [
-            'desc' => 'Displays information about this App',
-            'help' => 'For Config info, the section can combine config:key, eg; info config:dbname'
+            'desc' => 'Displays this application info',
+            'help' => $this->get_help_text( $name )
         ];
 
         $data['args'] = [
-            'key' => 'Key string',
+            'key' => 'Key pattern',
             'value' => 'Value string',
-            'expiry' => 'Expiry in seconds',
-            'raw' => 'Display raw data',
-            'meta' => 'Display meta data',
-            'nobox' => 'Disable box display',
+            'expire' => 'Set a timeout on key. The expiry value in seconds',
+            'raw' => 'To output raw data',
+            'meta' => 'To output meta data',
             'section' => 'Display section info',
-            'type' => 'Set data type. (string, integer, array, json)',
-            'savebinary' => 'Save binary data to file'
+            'asarray' => 'Set a value as Array string',
+            'encrypt' => 'Encrypt string value',
+            'decrypt' => 'Decrypt string value',
+            'saveto' => 'Save binary data to file',
+            'incrnumber' => 'Increment number',
+            'decrnumber' => 'Decrement number'
         ];
 
         return ( isset( $data[ $name ] ) ? (object) $data[ $name ] : '' );
     }
 
     public function run() {
-        $app = new Application( $this->db->name(), $this->db->version() );
+        $app = new Application( $this->db->name(), 'v'.$this->db->version().' -- '.$this->db->desc().' '.$this->db->url() );
         $app->setCatchExceptions( true );
         $app->add( new Set( $this ) );
         $app->add( new Get( $this ) );
         $app->add( new Keys( $this ) );
+        $app->add( new Incr( $this ) );
+        $app->add( new Decr( $this ) );
+        $app->add( new Flush( $this ) );
         $app->add( new Info( $this ) );
         $app->run();
     }

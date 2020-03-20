@@ -1,0 +1,16 @@
+Increments the number stored at key by increment. Automatically increment by one if no number supplied.
+
+Return value
+
+The value of key after the increment if successful, nil otherwise.
+
+Example
+
+    monodb incr run
+    monodb incr run 10
+
+Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
+
+    monodb incr run --raw
+    monodb incr run 10 --raw
+

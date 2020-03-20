@@ -12,7 +12,6 @@ namespace Monodb\Command;
 use Monodb\Monodb;
 use Monodb\Functions as Func;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -33,55 +32,64 @@ class Set extends Command {
 
         $help = $this->console->info( 'args' );
         $this->addArgument( 'key', InputArgument::REQUIRED, $help->key );
-        $this->addArgument( 'value', InputArgument::REQUIRED, $help->value );
-        $this->addArgument( 'expiry', InputArgument::OPTIONAL, $help->expiry );
-        $this->addOption( 'raw', '', InputOption::VALUE_NONE, $help->raw );
-        $this->addOption( 'no-box', '', InputOption::VALUE_NONE, $help->nobox );
-        $this->addOption( 'type', '', InputOption::VALUE_OPTIONAL, $help->type, 'string' );
+        $this->addArgument( 'value', InputArgument::IS_ARRAY | InputArgument::REQUIRED, $help->value );
+        $this->addOption( 'as-array', 'a', InputOption::VALUE_NONE, $help->asarray );
+        $this->addOption( 'encrypt', 'c', InputOption::VALUE_OPTIONAL, $help->encrypt );
+        $this->addOption( 'expire', 'e', InputOption::VALUE_OPTIONAL, $help->expire, 0 );
+        $this->addOption( 'raw', 'r', InputOption::VALUE_NONE, $help->raw );
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
         $key = $input->getArgument( 'key' );
         $value = $input->getArgument( 'value' );
-        $expiry = $input->getArgument( 'expiry' );
 
-        $type = $input->getOption( 'type' );
+        $encrypt_key = $input->getOption( 'encrypt' );
+        $expire = $input->getOption( 'expire' );
 
-        $is_box = ( ! empty( $input->getOption( 'no-box' ) ) ? false : true );
+        $is_encrypt = ( ! empty( $encrypt_key ) ? true : false );
+        $is_asarray = ( ! empty( $input->getOption( 'as-array' ) ) ? true : false );
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
 
-        if ( Func::start_with( $value, "'" ) && Func::end_with( $value, "'" ) ) {
-            $value = trim( $value, "'" );
-        }
-
-        if ( 'array' === $type ) {
-            if ( Func::is_var_json( $value ) ) {
-                $value = json_decode( $value, true );
+        if ( $is_asarray ) {
+            $arr = [];
+            foreach ( $value as $n => $v ) {
+                if ( preg_match( '@([^=]+)=([^=]+)@', $v, $mm ) ) {
+                    $arr[ $mm[1] ] = $mm[2];
+                } else {
+                    $arr[ $n ] = $v;
+                }
             }
+            $value = $arr;
+
+        } else {
+
+            $text = ' '.implode( ' ', $value );
+            $value = trim( $text );
         }
 
-        $results = $this->console->db->set( $key, $value, $expiry );
+        $console = $this->console;
+        $db = $console->db;
+
+        if ( $is_encrypt ) {
+            $db = $db->encrypt( $encrypt_key );
+        }
+
+        $results = $db->set( $key, $value, $expire );
 
         if ( false === $results ) {
-            $this->console->output_raw( $output, $this->console->db->last_error() );
+            $console->output_raw( $output, $console->db->last_error() );
             return 1;
         }
 
         if ( $is_raw ) {
-            $this->console->output_raw( $output, $results );
+            $console->output_raw( $output, $results );
             return 0;
         }
 
-        $table = new Table( $output );
-        $header = [ 'Key', 'Type' ];
-        $row[] = [ $results, ucfirst( $type ) ];
+        $header = [ 'Key' ];
+        $row[] = [ $results ];
 
-        if ( $is_box ) {
-            $table->setStyle( 'box' );
-        }
-        $table->setHeaders( $header );
-        $table->setRows( $row );
-        $table->render();
+        $console->output_table( $output, $header, $row );
         return 0;
     }
 }

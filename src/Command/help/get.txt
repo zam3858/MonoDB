@@ -1,0 +1,28 @@
+Get the value of the key. If the key does not exist, nil is returned. Use wildcard pattern to match available key string.
+
+Supported wildcard patterns:
+
+    h?llo matches hello, hallo and hxllo
+    h*llo matches hllo and heeeello
+
+Usage example:
+
+    monodb get name
+    monodb get *am*
+
+Use '--decrypt' option if want to decrypt the string value.
+
+    monodb get name --decrypt=secret
+
+Use '--save-to' option if want to output binary data to file.
+
+    monodb get image --save-to=image.jpg
+
+Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
+
+    monodb get name --raw
+
+Use '--meta' option if want to output internal data schema.
+
+    monodb keys --meta
+

@@ -1,0 +1,29 @@
+Display all available keys. Optionally display specified key and use wildcard patterns to match it.
+
+Return value:
+
+If successful will return a list of key, nil otherwise.
+
+Supported wildcard patterns:
+
+    h?llo matches hello, hallo and hxllo
+    h*llo matches hllo and heeeello
+
+Examples:
+
+    monodb keys
+    monodb keys fullname
+    monodb keys *name*
+
+Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
+
+    monodb keys --raw
+    monodb keys fullname --raw
+    monodb keys *name* --raw
+
+Use '--meta' option if want to output internal data schema.
+
+    monodb keys --meta
+    monodb keys fullname --meta
+    monodb keys *name* --meta
+

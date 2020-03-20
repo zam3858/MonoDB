@@ -12,7 +12,6 @@ namespace Monodb\Command;
 use Monodb\Monodb;
 use Monodb\Functions as Func;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -33,8 +32,7 @@ class Info extends Command {
 
         $help = $this->console->info( 'args' );
         $this->addArgument( 'section', InputArgument::OPTIONAL, $help->section );
-        $this->addOption( 'raw', '', InputOption::VALUE_NONE, $help->raw );
-        $this->addOption( 'no-box', '', InputOption::VALUE_NONE, $help->nobox );
+        $this->addOption( 'raw', 'r', InputOption::VALUE_NONE, $help->raw );
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
@@ -43,10 +41,10 @@ class Info extends Command {
             $section = '';
         }
 
-        $results = $this->console->db->info( $section );
-
-        $is_box = ( ! empty( $input->getOption( 'no-box' ) ) ? false : true );
+        $section = strtolower( $section );
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
+
+        $results = $this->console->db->info( $section );
 
         if ( false === $results ) {
             $this->console->output_raw( $output, $this->console->db->last_error() );
@@ -58,7 +56,6 @@ class Info extends Command {
             return 0;
         }
 
-        $table = new Table( $output );
         $header = [];
         $row = [];
 
@@ -78,12 +75,8 @@ class Info extends Command {
                                 return $arr;
                             }
                             foreach ( $arr as $a => $b ) {
-                                if ( \is_string( $b ) && \strlen( $b ) > 50 ) {
-                                    $b_r = substr( $b, 0, 50 );
-                                    if ( $b_r !== $b ) {
-                                        $b = $b_r.'...';
-                                    }
-                                    $arr[ $a ] = $b;
+                                if ( \is_string( $b ) ) {
+                                    $arr[ $a ] = Func::cutstr( $b, 50 );
                                 }
                                 return $arr;
                             }
@@ -91,27 +84,17 @@ class Info extends Command {
                         $k
                     );
                     $k = Func::export_var( $k );
-                } elseif ( \is_string( $k ) && \strlen( $k ) > 50 ) {
-                    $k_r = substr( $k, 0, 50 );
-                    if ( $k_r !== $k ) {
-                        $k = $k_r.'...';
-                    }
+                } elseif ( \is_string( $k ) ) {
+                    $k = Func::cutstr( $k, 50 );
                 }
 
                 $r[ $n ] = $k;
             }
 
             $row[] = $r;
-
-            $header = array_map( 'ucwords', $header );
-            if ( $is_box ) {
-                $table->setStyle( 'box' );
-            }
         }
 
-        $table->setHeaders( $header );
-        $table->setRows( $row );
-        $table->render();
+        $this->console->output_table( $output, $header, $row );
 
         return 0;
     }

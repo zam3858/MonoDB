@@ -1,0 +1,16 @@
+Decrements the number stored at key by decrement. Automatically decrement by one if no number supplied.
+
+Return value
+
+Return the value of key after the decrement if successful, nil otherwise.
+
+Example
+
+    monodb decr run
+    monodb decr run 10
+
+Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
+
+    monodb decr run --raw
+    monodb decr run 10 --raw
+

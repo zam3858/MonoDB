@@ -16,6 +16,8 @@ class Monodb {
 
     const VERSION = '1.0.0';
     const NAME = 'MonoDB';
+    const DESC = 'A flat-file key-value data structure';
+    const URL = 'https://monodb.io';
 
     protected $config = [];
 
@@ -83,12 +85,18 @@ class Monodb {
      *
      * @access private
      */
-    private function catch_error( $name, $text ) {
-        $this->errors[] = [
+    private function catch_error( $caller, $status ) {
+        $log = [
             'timestamp' => gmdate( 'Y-m-d H:i:s' ).' UTC',
-            'caller' => $name,
-            'status' => $text
+            'caller' => $caller,
+            'status' => $status
         ];
+
+        if ( is_array( $status ) ) {
+            $log = array_merge( $log, $status );
+        }
+
+        $this->errors[] = $log;
     }
 
     /**
@@ -120,7 +128,7 @@ class Monodb {
     private function sanitize_key( string $key ) {
         $key_r = preg_replace( '@[^A-Za-z0-9.-:]@', '', $key );
         if ( $key_r !== $key ) {
-            $key = md5( $key );
+            $key = substr( $key_r.md5( $key.$key_r.mt_srand() ), 0, 12 );
         }
         return substr( $key, 0, $this->config->key_length );
     }
@@ -262,12 +270,12 @@ class Monodb {
         }
 
         $index[ $key ]['key'] = $key;
-        $index[ $key ]['timestamp'] = $item['timestamp'];
-        $index[ $key ]['expiry'] = ( ! empty( $item['expiry'] ) ? $item['expiry'] : '' );
         $index[ $key ]['index'] = ltrim( str_replace( ltrim( $this->config->dbdir, './' ), '', trim( $path, '.php' ) ), '/' );
+        $index[ $key ]['timestamp'] = $item['timestamp'];
+        $index[ $key ]['expiry'] = ( ! empty( $item['expiry'] ) ? $item['expiry'] : 0 );
+        $index[ $key ]['type'] = $item['type'];
         $index[ $key ]['size'] = $item['size'];
-        $index[ $key ]['type'] = ucfirst( $item['type'] );
-        $index[ $key ]['encoded'] = ( ! empty( $item['encoded'] ) ? $item['encoded'] : '' );
+        $index[ $key ]['encoded'] = ( ! empty( $item['encoded'] ) ? $item['encoded'] : 0 );
 
         $code = $this->data_code( $index );
         return $this->data_save( $file, $code );
@@ -363,8 +371,8 @@ class Monodb {
         $data = $this->fetch_file( $data, $extra_meta );
 
         $meta = [
-            'key' => $key,
             'timestamp' => gmdate( 'Y-m-d H:i:s' ).' UTC',
+            'key' => $key,
             'type' => Func::get_type( $data ),
             'size' => Func::get_size( $data )
         ];
@@ -382,7 +390,8 @@ class Monodb {
             }
 
             $data = base64_encode( $data );
-            $meta['encoded'] = \strlen( $data );
+            $meta['size'] = \strlen( $data );
+            $meta['encoded'] = 1;
         }
 
         if ( ! empty( $expiry ) && Func::is_var_num( $expiry ) ) {
@@ -400,12 +409,12 @@ class Monodb {
 
         if ( false !== $this->chain_encrypt && \is_string( $this->chain_encrypt ) ) {
             $data = Func::encrypt( $data, $this->chain_encrypt );
-            $meta['chain_encrypt'] = 1;
-            $meta['length'] = \strlen( $data );
+            $meta['size'] = \strlen( $data );
+            $meta['encoded'] = ( ! empty( $meta['encoded'] ) ? 3 : 2 );
         }
         $this->chain_encrypt = false;
 
-        $meta['data'] = $data;
+        $meta['value'] = $data;
         $code = $this->data_code( $meta );
 
         $file = $this->key_path( $key, true );
@@ -440,7 +449,7 @@ class Monodb {
 
         if ( Func::is_file_readable( $file ) ) {
             $meta = $this->data_read( $file );
-            if ( ! \is_array( $meta ) || empty( $meta ) || empty( $meta['data'] ) ) {
+            if ( ! \is_array( $meta ) || empty( $meta ) || empty( $meta['value'] ) ) {
                 $this->delete( $key );
                 return false;
             }
@@ -448,25 +457,42 @@ class Monodb {
             if ( ! empty( $meta['expiry'] ) && Func::is_var_num( $meta['expiry'] ) ) {
                 if ( time() >= (int) $meta['expiry'] ) {
                     $this->delete( $key );
-                    $this->catch_error( __METHOD__, 'expired: '.$key );
+                    $this->catch_error(
+                        __METHOD__,
+                        [
+                            'status' => 'expired',
+                            'Key' => $key,
+                            'Expiry' => gmdate(
+                                'Y-m-d H:i:s',
+                                $meta['expiry']
+                            )
+                        ]
+                    );
                     return false;
                 }
             }
 
-            $data = $meta['data'];
-            if ( false !== $this->chain_decrypt && \is_string( $this->chain_decrypt ) ) {
-                $data = Func::decrypt( $data, $this->chain_decrypt );
-                unset( $meta['chain_encrypt'] );
+            $data = $meta['value'];
+            $data_plain = true;
+            if ( false !== $this->chain_decrypt && \is_string( $this->chain_decrypt ) && ! empty( $meta['encoded'] ) && ( 2 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'] ) ) {
+                $data_r = Func::decrypt( $data, $this->chain_decrypt );
+                if ( empty( $data_r ) || ! Func::ctype_print( $data_r ) ) {
+                    $data_plain = false;
+                } else {
+                    $data = $data_r;
+                    $meta['encoded'] = ( 3 === (int) $meta['encoded'] ? 1 : 0 );
+                }
             }
             $this->chain_decrypt = false;
 
-            if ( 'binary' === $meta['type'] && $chain_blob ) {
+            if ( $data_plain && $chain_blob && 'binary' === $meta['type'] && ! empty( $meta['encoded'] ) && ( 1 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'] ) ) {
                 $data = base64_decode( $data );
+                $meta['encoded'] = ( 3 === (int) $meta['encoded'] ? 2 : 0 );
             }
 
-            $meta['data'] = $data;
+            $meta['value'] = $data;
 
-            return ( ! $chain_meta ? $meta['data'] : $meta );
+            return ( ! $chain_meta ? $meta['value'] : $meta );
         }
 
         return false;
@@ -520,7 +546,7 @@ class Monodb {
      * @access public
      */
     public function flush() {
-         $keys = $this->keys();
+        $keys = $this->keys();
         $num = 0;
         if ( ! empty( $keys ) && \is_array( $keys ) ) {
             foreach ( $keys as $key ) {
@@ -529,7 +555,7 @@ class Monodb {
                 }
             }
         }
-        return $num;
+        return ( $num > 0 ? $num : false );
     }
 
     /**
@@ -561,7 +587,7 @@ class Monodb {
             };
 
             $type = $meta['type'];
-            $data = $meta['data'];
+            $data = $meta['value'];
 
             if ( $func_is_invalid( $match, $type ) ) {
                 return false;
@@ -687,7 +713,7 @@ class Monodb {
      * @access public
      */
     public function info( $name = '' ) {
-        $info['name'] = 'MonoDB';
+        $info['name'] = $this->name();
         $info['version'] = $this->version();
         foreach ( $this->config as $k => $v ) {
             $info['config'][ $k ] = $v;
@@ -711,10 +737,19 @@ class Monodb {
         if ( $this->exists( $key ) ) {
             $data = $this->get( $key );
             if ( ! empty( $data ) && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
-                $data = (int) $data + (int) $num;
+                if ( $num > PHP_INT_MAX ) {
+                    return false;
+                }
+
+                $data = ( $data + $num );
                 if ( $data < 0 ) {
                     $data = 1;
                 }
+
+                if ( $data > PHP_INT_MAX ) {
+                    return false;
+                }
+
                 if ( $this->set( $key, $data ) ) {
                     return $data;
                 }
@@ -737,8 +772,12 @@ class Monodb {
         if ( $this->exists( $key ) ) {
             $data = $this->get( $key );
             if ( ! empty( $data ) && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
-                $data = (int) $data - (int) $num;
-                if ( $data < 0 ) {
+                if ( $num > PHP_INT_MAX ) {
+                    return false;
+                }
+
+                $data = ( $data - $num );
+                if ( $data < PHP_INT_MAX ) {
                     $data = 0;
                 }
                 if ( $this->set( $key, $data ) ) {
@@ -816,5 +855,13 @@ class Monodb {
 
     public function name() {
         return self::NAME;
+    }
+
+    public function desc() {
+        return self::DESC;
+    }
+
+    public function url() {
+        return self::URL;
     }
 }

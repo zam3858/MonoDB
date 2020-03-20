@@ -26,7 +26,7 @@ class Config {
 
     public function __construct( array $options ) {
         $this->dir = Func::resolve_path( './' );
-        $this->dbdir = $this->dir.$this->dbname;
+        $this->dbdir = $this->dir.$this->dbname.'/';
 
         $options = $this->set_options( $options );
 
@@ -40,8 +40,8 @@ class Config {
 
     protected function set_options( array $options ) {
         if ( ! empty( $options['dir'] ) && \is_string( $options['dir'] ) ) {
-            $options['dir'] = Func::normalize_path( $options['dir'].'/' );
-            $options['dbdir'] = $options['dir'].'monodb0/';
+            $options['dir'] = Func::resolve_path( $options['dir'].'/' );
+            $options['dbdir'] = $options['dir'].$this->dbname.'/';
         }
 
         if ( ! empty( $options['dbname'] ) && \is_string( $options['dbname'] ) ) {

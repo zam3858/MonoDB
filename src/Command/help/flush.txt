@@ -1,0 +1,14 @@
+Delete all available keys.
+
+Return value
+
+If successful will return a count of deleted keys, nil otherwise.
+
+Examples
+
+    monodb flush
+
+Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
+
+    monodb flush --raw
+

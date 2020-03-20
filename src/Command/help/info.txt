@@ -1,0 +1,14 @@
+Display information about this application, such as name, version and current configuration.
+
+Usage example:
+
+    monodb info
+    monodb info section
+    monodb info config:section
+
+Use --raw option if want to output raw data. The raw data either a single string or in array string format.
+
+    monodb info --raw
+    monodb info section --raw
+    monodb info config:section --raw
+

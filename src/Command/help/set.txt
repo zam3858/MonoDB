@@ -1,0 +1,34 @@
+Set key to hold the string value. If the key already holds a value, it is overwritten, regardless of its type. 
+Only alphabet, number, dot, hyphen and colon [A-Za-z0-9.-:] consider as a valid key string. 
+Invalid key string silently converts to random string.
+
+Return value:
+
+If successful will return key string, nil otherwise.
+
+Examples:
+
+    monodb set name john
+    monodb set name john labu labi doe
+
+Use file:// scheme to set the file content as a value. The content will encode with base64 format. 
+
+    monodb set image file:///fullpath-to-file/file-image.jpg
+
+Use '--expire' option if want to set a timeout on key. The key will remove after reaching the set of the timeout period.
+
+    monodb set goodbye john --expire=300
+
+Use '--as-array' option if want to set a value as Array string.
+
+    monodb set name john labu labi doe --as-array
+    monodb set name nickname=john age=32 status=available --as-array
+
+Use '--encrypt' option if want to encrypt the string value.
+
+    monodb set name john --encrypt=secret
+
+Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
+
+    monodb set name john --raw
+
