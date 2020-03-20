@@ -322,7 +322,7 @@ class Monodb {
                         $extra_meta['mime'] = $mime;
                     }
                 }
-                $extra_meta['fetch'] = $src;
+                $extra_meta['source'] = $src;
                 try {
                     $data = file_get_contents( $fi );
                 } catch ( \Exception $e ) {
