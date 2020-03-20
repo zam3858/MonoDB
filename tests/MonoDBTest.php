@@ -12,7 +12,7 @@ class MonodbTest extends TestCase {
             ]
         );
 
-        $input = $db->info()->dir;
+        $input = $db->info('config:dir');
         $results = $dir;
         $this->assertEquals( $input, $results );
     }
