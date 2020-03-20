@@ -127,7 +127,7 @@ $results = $db->find( 'student', [ 'name','borhan' ] );
 $results = $db->find( 'student', [ '*me','*nya*' ] );
 
 // Store data with expiry time.
-$db->set( 'lock-file', 'proc.php', strtotime( '+5 minutes' ) );
+$db->set( 'lock-file', 'proc.php', ( 60*5 ) );
 
 // Store binary data directly from file.
 $db->set( 'happy.png', 'file:///pathtoaimge/happy.png' );
