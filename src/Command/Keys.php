@@ -31,7 +31,7 @@ class Keys extends Command {
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
         $help = $this->console->info( 'args' );
-        $this->addArgument( 'key', InputArgument::OPTIONAL, $help->key );
+        $this->addArgument( 'key', InputArgument::OPTIONAL, $help->key, '' );
         $this->addOption( 'meta', 'm', InputOption::VALUE_NONE, $help->meta );
         $this->addOption( 'raw', 'r', InputOption::VALUE_NONE, $help->raw );
     }

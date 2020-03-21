@@ -32,7 +32,7 @@ class Incr extends Command {
 
         $help = $this->console->info( 'args' );
         $this->addArgument( 'key', InputArgument::REQUIRED, $help->key );
-        $this->addArgument( 'number', InputArgument::OPTIONAL, $help->incrnumber );
+        $this->addArgument( 'number', InputArgument::OPTIONAL, $help->incrnumber, '' );
         $this->addOption( 'meta', 'm', InputOption::VALUE_NONE, $help->meta );
         $this->addOption( 'raw', 'r', InputOption::VALUE_NONE, $help->raw );
     }

@@ -33,10 +33,10 @@ class Get extends Command {
 
         $help = $this->console->info( 'args' );
         $this->addArgument( 'key', InputArgument::REQUIRED, $help->key );
-        $this->addOption( 'decrypt', 'd', InputOption::VALUE_OPTIONAL, $help->decrypt );
+        $this->addOption( 'decrypt', 'd', InputOption::VALUE_OPTIONAL, $help->decrypt, '' );
         $this->addOption( 'meta', 'm', InputOption::VALUE_NONE, $help->meta );
         $this->addOption( 'raw', 'r', InputOption::VALUE_NONE, $help->raw );
-        $this->addOption( 'save-to', 's', InputOption::VALUE_OPTIONAL, $help->saveto );
+        $this->addOption( 'save-to', 's', InputOption::VALUE_OPTIONAL, $help->saveto, '' );
     }
 
 
