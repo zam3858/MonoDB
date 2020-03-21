@@ -48,6 +48,6 @@
         }
     },
     "archive": {
-        "exclude": ["/tests", "/vendor"]
+        "exclude": ["tests/", "vendor/", ".gitignore", "phpunit.xml", ".gitattributes", ".phpcs.xml"]
     }
 }
