@@ -35,6 +35,9 @@
         "ext-zend-opcache": "Recommended for better performance",
         "ext-ctype": "For best performance"
     },
+    "bin": [
+        "bin/monodb"
+    ],
     "autoload": {
         "psr-4": {
             "Monodb\\": "src/"
@@ -47,7 +50,7 @@
             "dev-master": "1.0.x-dev"
         }
     },
-    "archive": {
-        "exclude": ["tests/", "vendor/", ".gitignore", "phpunit.xml", ".gitattributes", ".phpcs.xml"]
+    "config": {
+        "optimize-autoloader": true
     }
 }
