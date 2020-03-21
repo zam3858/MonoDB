@@ -1,28 +1,32 @@
-Get the value of the key. If the key does not exist, nil is returned. Use wildcard pattern to match available key string.
+Get the value of the key. Use wildcard pattern to match available key string and only the first match key will be used.
 
-Supported wildcard patterns:
+<fg=cyan>Return value</>
 
-    h?llo matches hello, hallo and hxllo
-    h*llo matches hllo and heeeello
+The value of key if successful, nil otherwise.
 
-Usage example:
+<fg=cyan>Supported wildcard patterns</>
 
-    monodb get name
-    monodb get *am*
+h?llo matches hello, hallo and hxllo
+h*llo matches hllo and heeeello
 
+<fg=cyan>Examples</>
+<info>
+%command.full_name% name
+%command.full_name% *am*
+</info>
 Use '--decrypt' option if want to decrypt the string value.
-
-    monodb get name --decrypt=secret
-
+<info>
+%command.full_name% name --decrypt=secret
+</info>
 Use '--save-to' option if want to output binary data to file.
-
-    monodb get image --save-to=image.jpg
-
-Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
-
-    monodb get name --raw
-
+<info>
+%command.full_name% image --save-to=image.jpg
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% name --raw
+</info>
 Use '--meta' option if want to output internal data schema.
-
-    monodb keys --meta
-
+<info>
+%command.full_name% --meta
+</info>

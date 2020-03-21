@@ -1,0 +1,23 @@
+Find the value of key.
+
+<fg=cyan>Return value</>
+
+The value of key if successful, nil otherwise.
+
+<fg=cyan>Supported wildcard patterns</>
+
+h?llo matches hello, hallo and hxllo
+h*llo matches hllo and heeeello
+
+<fg=cyan>Examples</>
+<info>
+%command.full_name% student john
+%command.full_name% student name=john
+%command.full_name% student name=john age=21
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% student john --raw
+%command.full_name% student name=john --raw
+%command.full_name% student name=john age=21 --raw
+</info>

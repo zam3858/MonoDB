@@ -2,33 +2,33 @@ Set key to hold the string value. If the key already holds a value, it is overwr
 Only alphabet, number, dot, hyphen and colon [A-Za-z0-9.-:] consider as a valid key string. 
 Invalid key string silently converts to random string.
 
-Return value:
+<fg=cyan>Return value</>
 
 If successful will return key string, nil otherwise.
 
-Examples:
-
-    monodb set name john
-    monodb set name john labu labi doe
-
+<fg=cyan>Examples</>
+<info>
+%command.full_name% name john
+%command.full_name% name john labu labi doe
+</info>
 Use file:// scheme to set the file content as a value. The content will encode with base64 format. 
-
-    monodb set image file:///fullpath-to-file/file-image.jpg
-
+<info>
+%command.full_name% image file:///fullpath-to-file/file-image.jpg
+</info>
 Use '--expire' option if want to set a timeout on key. The key will remove after reaching the set of the timeout period.
-
-    monodb set goodbye john --expire=300
-
+<info>
+%command.full_name% goodbye john --expire=300
+</info>
 Use '--as-array' option if want to set a value as Array string.
-
-    monodb set name john labu labi doe --as-array
-    monodb set name nickname=john age=32 status=available --as-array
-
+<info>
+%command.full_name% name john labu labi doe --as-array
+%command.full_name% name nickname=john age=32 status=available --as-array
+</info>
 Use '--encrypt' option if want to encrypt the string value.
-
-    monodb set name john --encrypt=secret
-
-Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
-
-    monodb set name john --raw
-
+<info>
+%command.full_name% name john --encrypt=secret
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% name john --raw
+</info>

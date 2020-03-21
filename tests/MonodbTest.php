@@ -3,7 +3,7 @@ namespace Monodb;
 
 use PHPUnit\Framework\TestCase;
 
-class MonodbTest extends TestCase {
+class ApiTest extends TestCase {
     public function testConfig() {
         $dir = realpath( __DIR__ ).'/';
         $db = new Monodb(
@@ -12,7 +12,7 @@ class MonodbTest extends TestCase {
             ]
         );
 
-        $input = $db->info('config:dir');
+        $input = $db->info( 'config:dir' );
         $results = $dir;
         $this->assertEquals( $input, $results );
     }

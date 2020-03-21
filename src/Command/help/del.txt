@@ -1,0 +1,24 @@
+Delete the specified keys or multiple key. A key is ignored if it does not exist. 
+Use wildcard pattern to match the available key string and only the first match key will be used.
+
+<fg=cyan>Return value</>
+
+A count of deleted keys if successful, nil otherwise.
+
+<fg=cyan>Supported wildcard patterns</>
+
+h?llo matches hello, hallo and hxllo
+h*llo matches hllo and heeeello
+
+<fg=cyan>Examples</>
+<info>
+%command.full_name% key
+%command.full_name% key1 key2 key3
+%command.full_name% *key*
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% key --raw
+%command.full_name% key1 key2 key3 --raw
+%command.full_name% *key* --raw
+</info>

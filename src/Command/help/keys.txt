@@ -1,29 +1,30 @@
-Display all available keys. Optionally display specified key and use wildcard patterns to match it.
+Display all available keys or optionally display specified key. 
+Use wildcard patterns to match it, only the first match key will be used.
 
-Return value:
+<fg=cyan>Return value</>
 
-If successful will return a list of key, nil otherwise.
+A list of key if successful, nil otherwise.
 
-Supported wildcard patterns:
+<fg=cyan>Supported wildcard patterns</>
 
-    h?llo matches hello, hallo and hxllo
-    h*llo matches hllo and heeeello
+h?llo matches hello, hallo and hxllo
+h*llo matches hllo and heeeello
 
-Examples:
-
-    monodb keys
-    monodb keys fullname
-    monodb keys *name*
-
-Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
-
-    monodb keys --raw
-    monodb keys fullname --raw
-    monodb keys *name* --raw
-
+<fg=cyan>Examples</>
+<info>
+%command.full_name%
+%command.full_name% fullname
+%command.full_name% *name*
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% --raw
+%command.full_name% fullname --raw
+%command.full_name% *name* --raw
+</info>
 Use '--meta' option if want to output internal data schema.
-
-    monodb keys --meta
-    monodb keys fullname --meta
-    monodb keys *name* --meta
-
+<info>
+%command.full_name% --meta
+%command.full_name% fullname --meta
+%command.full_name% *name* --meta
+</info>

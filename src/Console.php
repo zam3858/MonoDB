@@ -19,8 +19,11 @@ use Monodb\Command\Get;
 use Monodb\Command\Keys;
 use Monodb\Command\Incr;
 use Monodb\Command\Decr;
+use Monodb\Command\Del;
 use Monodb\Command\Flush;
 use Monodb\Command\Info;
+use Monodb\Command\Exists;
+use Monodb\Command\Find;
 
 class Console {
     public $options = [];
@@ -63,6 +66,9 @@ class Console {
             $data = file_get_contents( $file );
             $data = trim( $data );
             if ( ! empty( $data ) ) {
+                if ( Func::end_with( $data, '</info>' ) ) {
+                    return $data;
+                }
                 return $data.PHP_EOL;
             }
         }
@@ -97,6 +103,11 @@ class Console {
             'help' => $this->get_help_text( $name )
         ];
 
+        $data['del'] = [
+            'desc' => 'Delete the specified keys',
+            'help' => $this->get_help_text( $name )
+        ];
+
         $data['flush'] = [
             'desc' => 'Delete all available keys',
             'help' => $this->get_help_text( $name )
@@ -104,6 +115,16 @@ class Console {
 
         $data['info'] = [
             'desc' => 'Displays this application info',
+            'help' => $this->get_help_text( $name )
+        ];
+
+        $data['exists'] = [
+            'desc' => 'Check if the key exists',
+            'help' => $this->get_help_text( $name )
+        ];
+
+        $data['find'] = [
+            'desc' => 'Find the value of key',
             'help' => $this->get_help_text( $name )
         ];
 
@@ -131,10 +152,13 @@ class Console {
         $app->add( new Set( $this ) );
         $app->add( new Get( $this ) );
         $app->add( new Keys( $this ) );
+        $app->add( new Find( $this ) );
         $app->add( new Incr( $this ) );
         $app->add( new Decr( $this ) );
+        $app->add( new Del( $this ) );
         $app->add( new Flush( $this ) );
         $app->add( new Info( $this ) );
+        $app->add( new Exists( $this ) );
         $app->run();
     }
 }

@@ -125,7 +125,7 @@ class Get extends Command {
             if ( $is_meta ) {
                 $header = array_keys( $results );
                 $row2 = array_values( $results );
-
+                $r = [];
                 foreach ( $row2 as $n => $k ) {
                     if ( \is_array( $k ) ) {
                         $k = array_map(
@@ -183,8 +183,6 @@ class Get extends Command {
                     }
                 }
             }
-
-            $header = array_map( 'ucwords', $header );
         }
 
         $this->console->output_table( $output, $header, $row );

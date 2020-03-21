@@ -522,7 +522,7 @@ class Monodb {
         if ( Func::is_file_writable( $file ) && unlink( $file ) ) {
             $this->unset_index( $key );
             $this->flush_key_path( $file );
-            return true;
+            return $key;
         }
         return false;
     }
@@ -535,7 +535,10 @@ class Monodb {
     public function mdelete( ...$keys ) {
         $results = [];
         foreach ( $keys as $key ) {
-            $results[ $key ] = ( $this->delete( $key ) ? 'true' : 'false' );
+            $key = $this->delete( $key );
+            if ( false !== $key ) {
+                $results[] = $key;
+            }
         }
         return $results;
     }
@@ -550,7 +553,7 @@ class Monodb {
         $num = 0;
         if ( ! empty( $keys ) && \is_array( $keys ) ) {
             foreach ( $keys as $key ) {
-                if ( $this->delete( $key ) ) {
+                if ( false !== $this->delete( $key ) ) {
                     $num++;
                 }
             }

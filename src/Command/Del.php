@@ -16,9 +16,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-class Flush extends Command {
+class Del extends Command {
 
     private $console;
     public function __construct( $console ) {
@@ -27,42 +26,49 @@ class Flush extends Command {
     }
 
     protected function configure() {
-        $name = 'flush';
+        $name = 'del';
         $info = $this->console->info( $name );
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
         $help = $this->console->info( 'args' );
+        $this->addArgument( 'key', InputArgument::IS_ARRAY | InputArgument::REQUIRED, $help->key );
         $this->addOption( 'raw', 'r', InputOption::VALUE_NONE, $help->raw );
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
+        $keys = $input->getArgument( 'key' );
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
 
-        $helper = $this->getHelper( 'question' );
-        $question = new ConfirmationQuestion( 'This action will delete all available keys. Continue with this action? (Y/N): ', false );
+        $console = $this->console;
 
-        if ( ! $helper->ask( $input, $output, $question ) ) {
-            $this->console->output_nil( $output );
-            return 1;
+        $cnt = 0;
+        foreach ( $keys as $n => $key ) {
+            if ( Func::has_with( $key, '*' ) ) {
+                $key_r = $console->db->keys( $key );
+                if ( ! empty( $key_r ) ) {
+                    $key = $key_r[0];
+                }
+            }
+
+            if ( false !== $console->db->delete( $key ) ) {
+                $cnt++;
+            }
         }
 
-        $results = $this->console->db->flush();
-
-        if ( false === $results ) {
-            $this->console->output_raw( $output, $this->console->db->last_error() );
+        if ( 0 === $cnt ) {
+            $console->output_raw( $output, $console->db->last_error() );
             return 1;
         }
 
         if ( $is_raw ) {
-            $this->console->output_raw( $output, $results );
+            $console->output_raw( $output, $cnt );
             return 0;
         }
 
         $header = [ 'Removed' ];
-        $row[] = [ $results ];
+        $row[] = [ $cnt ];
 
-        $this->console->output_table( $output, $header, $row );
-
+        $console->output_table( $output, $header, $row );
         return 0;
     }
 }

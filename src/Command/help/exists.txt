@@ -1,0 +1,21 @@
+Check if the key exists. Use wildcard patterns to match it.
+
+<fg=cyan>Return value</>
+
+Return '1' if the key exists, '0' otherwise.
+
+<fg=cyan>Supported wildcard patterns</>
+
+h?llo matches hello, hallo and hxllo
+h*llo matches hllo and heeeello
+
+<fg=cyan>Examples</>
+<info>
+%command.full_name% key
+%command.full_name% *key*
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% key --raw
+%command.full_name% *key* --raw
+</info>

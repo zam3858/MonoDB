@@ -1,16 +1,16 @@
 Decrements the number stored at key by decrement. Automatically decrement by one if no number supplied.
 
-Return value
+<fg=cyan>Return value</>
 
 Return the value of key after the decrement if successful, nil otherwise.
 
-Example
-
-    monodb decr run
-    monodb decr run 10
-
-Use '--raw' option if want to output raw data. The raw data either a single string or in array string format.
-
-    monodb decr run --raw
-    monodb decr run 10 --raw
-
+<fg=cyan>Examples</>
+<info>
+%command.full_name% run
+%command.full_name% run 10
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% run --raw
+%command.full_name% run 10 --raw
+</info>

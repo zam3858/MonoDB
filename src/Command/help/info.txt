@@ -1,14 +1,18 @@
-Display information about this application, such as name, version and current configuration.
+Display information about this application, such as name, version and current configuration. Use colon to get specific data in configuration.
 
-Usage example:
+<fg=cyan>Return value</>
 
-    monodb info
-    monodb info section
-    monodb info config:section
+An information about this application.
 
-Use --raw option if want to output raw data. The raw data either a single string or in array string format.
-
-    monodb info --raw
-    monodb info section --raw
-    monodb info config:section --raw
-
+<fg=cyan>Examples</>
+<info>
+%command.full_name%
+%command.full_name% dir
+%command.full_name% config:dir
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% --raw
+%command.full_name% dir --raw
+%command.full_name% config:dir --raw
+</info>

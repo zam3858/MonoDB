@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit4517a84ce54f8b27fc3243f79d94cfec
+class ComposerStaticInitc59579763097b520185901d9321f8f9d
 {
     public static $files = array (
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
@@ -88,6 +88,9 @@ class ComposerStaticInit4517a84ce54f8b27fc3243f79d94cfec
     public static $classMap = array (
         'JsonException' => __DIR__ . '/..' . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
         'Monodb\\Command\\Decr' => __DIR__ . '/../..' . '/src/Command/Decr.php',
+        'Monodb\\Command\\Del' => __DIR__ . '/../..' . '/src/Command/Del.php',
+        'Monodb\\Command\\Exists' => __DIR__ . '/../..' . '/src/Command/Exists.php',
+        'Monodb\\Command\\Find' => __DIR__ . '/../..' . '/src/Command/Find.php',
         'Monodb\\Command\\Flush' => __DIR__ . '/../..' . '/src/Command/Flush.php',
         'Monodb\\Command\\Get' => __DIR__ . '/../..' . '/src/Command/Get.php',
         'Monodb\\Command\\Incr' => __DIR__ . '/../..' . '/src/Command/Incr.php',
@@ -228,9 +231,9 @@ class ComposerStaticInit4517a84ce54f8b27fc3243f79d94cfec
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit4517a84ce54f8b27fc3243f79d94cfec::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit4517a84ce54f8b27fc3243f79d94cfec::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit4517a84ce54f8b27fc3243f79d94cfec::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitc59579763097b520185901d9321f8f9d::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitc59579763097b520185901d9321f8f9d::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitc59579763097b520185901d9321f8f9d::$classMap;
 
         }, null, ClassLoader::class);
     }
