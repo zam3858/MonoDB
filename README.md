@@ -1,4 +1,5 @@
-# MonoDB
+
+# ![MonoDB](https://static.monodb.io/logo-150x150.svg) MonoDB
 MonoDB is flat-file key-value data structure store, used as a simple database, cache and message broker.
 
 
@@ -39,7 +40,8 @@ Alternatively, if you're not using Composer, download the [files](https://github
 ```php
 require 'path-to-monodb-dir/autoload.php';
 ```
-**Minimum Requirement:**
+
+## Minimum Requirement
 - PHP 7.1+
 - PHP json extension
 
@@ -62,87 +64,6 @@ echo $response;
 
 // Retrieve and display the value of "greeting" key.
 echo $db->get( 'greeting' );
-
-// Store value as associative array data.
-$profile = [
-    'name' => 'borhan',
-    'age' => 28,
-    'sex' => 'male'
-];
-
-$db->set( 'student', $profile );
-
-// Store value as indexed array data.
-$student = [];
-$student[0] = 'borhan';
-$student[1] = 'leman';
-$student[2] = 'vanya';
-
-$db->set( 'student', $student );
-
-// Store value as multidimensional array data.
-$student = [];
-$student[0]['name'] = 'borhan';
-$student[0]['age'] = 28;
-$student[0]['sex'] = 'male';
-$student[0]['details'] = [
-    'full name' => 'Borhan bin Nahrob',
-    'address'   => 'No 23 Jalan 5, KL'
-];
-
-$student[1]['name'] = 'leman';
-$student[1]['age'] = 32;
-$student[1]['sex'] = 'male';
-$student[1]['details'] = [
-    'full name' => 'Leman Al-Khatib',
-    'address'   => 'Lot 235, Jalan Tak Jumpa, Klang'
-];
-$student[2]['name'] = 'vanya';
-$student[2]['age'] = 25;
-$student[2]['sex'] = 'female';
-$student[2]['details'] = [
-    'full name' => 'Vanya Ang',
-    'address'   => 'Rumah no 7 belakang kilang ais lama, Loq Staq.'
-];
-
-$db->set( 'student', $student );
-
-// Retrieve and display data.
-$array = $db->get( 'student' );
-print_r( $array );
-
-// Retrieve and display index value.
-$db->get( 'student' )[0]['name'];
-
-// Find data.
-$results = $db->find( 'student', 'borhan' );
-
-// Find and retrieve data using wildcard.
-$results = $db->find( 'student', 'bor*' );
-
-// Find and retrieve data with index and value.
-$results = $db->find( 'student', [ 'name','borhan' ] );
-
-// Find and retrieve data with index and value using wildcard.
-$results = $db->find( 'student', [ '*me','*nya*' ] );
-
-// Store data with expiry time.
-$db->set( 'lock-file', 'proc.php', ( 60*5 ) );
-
-// Store binary data directly from file.
-$db->set( 'happy.png', 'file:///pathtoaimge/happy.png' );
-
-// Retrieve and display binary data. By default will return as encoded data.
-echo $db->get( 'happy.png' );
-
-// Retrieve and display binary oiginal data.
-echo $db->blob()->get( 'happy.png' );
-
-// Check if key exists, retrieve and display meta data.
-if ( $db->exists( 'happy.png' ) ) {
-    print_r( $db->meta()->get( 'happy.png' ) );
-}
-
 ```
 
 
@@ -176,95 +97,6 @@ Name|Type|Default Value|Description
 `key_expiry`|int|0|Default key expiry in timestamp for all keys.
 `perm_dir`|int|0755|Default Unix directory permission.
 `perm_file`|int|0644|Default Unix file permission.
-
-
-## Database Methods
-
-```
-$db = new Monodb\Monodb($config);
-$db->Method();
-```
-
-Method|Details
-:---|:---
-`set($key, $value, $expiry, $meta)`|<p>`set(string $key, mixed $value, (Opt)int $expiry, (Opt)array $meta)`</p><p>`$key` Only alphanumeric, hyphen, dot and semicolon considered as valid input.<br>`$value` Accept any data type.<br>`$expiry` *(optional)* If set, the key will expire after specified timestamp.<br>`$meta` *(optional)* Manually set additional meta data.</p>Return `key string` if successful, `false` otherwise.
-`get($key)`|<p>`get(string $key)`</p><p>Retrieve data associate with the key `$key`.</p>Return `mixed string` if successful, `false` otherwise.
-`mget($key1, $key2, ...)`|<p>`mget(string $key, string $key2, ...)`</p><p>Retrieve data from multiple keys.</p>Return `array string` always successful.
-`delete($key)`|<p>`delete(string $key)`</p><p>Delete data associate with the key`$key`.</p>Return `true` if successful, `false` otherwise.
-`mdelete($key1, $key2, ...)`|<p>`mdelete(string $key, string $key2, ...)`</p><p>Data data using multiple keys.</p>Return `array string` always successful.
-`keys($key)`|<p>`keys((Opt)string $key)`</p><p>Retrieve all available Keys. Optionally retrieve specified `$key` <br>and possible match it using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
-`find($key, $value)`<br>`find($key, [$array_key, $array_value])`|<p>`find(string $key, mixed $value)`</p><p>Retrieve data based on `$value` and possible match it, using wildcard `*key*`.</p>Return `mixed string` if successful, `false` otherwise.
-`find_all($value)`<br>`find_all([$array_key, $array_value])`|<p>`find_all(mixed $value)`</p>Retrieve data from all keys based on `$value` and possible match it, using wildcard `*key*`.</p>Return `array string` always successful.
-`exists($key)`|<p>`exists(string $key)`</p><p>Check if key `$key` exists and data file is readable.</p>Return `true` if available, `false` otherwise.
-`expire($key, $expiry)`|<p>`expire(string $key, int $expiry)`</p><p>Set expiry time in seconds for existing key.</p>Return `key string` if successful, `false` otherwise.
-`incr($key, $number)`|<p>`incr(string $key, (Opt)int $number)`</p><p>Increments the number stored at key by increment. Automatically increment by one if no number supplied.</p>Return the value of key after the increment.
-`decr($key, $number)`|<p>`decr(string $key, (Opt)int $number)`</p><p>Decrements the number stored at key by decrement. Automatically decrement by one if no number supplied.</p>Return the value of key after the decrement.
-`flush()`|<p>`flush()`</p>Flush database, delete all keys.
-`info()`|<p>`flush()`</p>Display library information.
-
-Example:
-- Store image file
-```php
-$db = new Monodb\Monodb();
-$db->set('image', 'file:///path-to-image/image.jpg', 0, ['mime'=>'image/jpg']);
-```
-
-- Retrieve image data
-```php
-$db = new Monodb\Monodb();
-// binary output
-$blob = $db->blob()->get('image');
-
-// array output
-$blob = $db->get('image');
-if ( is_array($blob) ) {
-    echo "<img src="data:".$blob['mime'].";base64,".$blob['data'].">";
-}
-```
-
-- Store mysql query results
-```php
-$mysqli = new mysqli("localhost","dbuser","dbpassword","dbname");
-$result = $mysqli->query("select * from tables");
-
-$db = new Monodb\Monodb();
-// key expires after 1 minutes
-$db->set('mysqlres', $result, 60 );
-
-```
-
-
-## Left Chain Methods *(optional)*
-
-```
-$db = new Monodb\Monodb($config);
-$db->Chain()->Method();
-```
-
-Chain Method|Details
-:---|:---
-`options($config)`|<p>`options(array $config)`</p>Set database options.
-`select($dbname)`|<p>`select(string $dbname)`</p>Change database name.
-`meta()`|<p>`meta()`</p>Retrieve key meta data.
-`blob()`|<p>`blob()`</p>Output data as binary if data type of Key is binary. By default MonoDB return as base64 encoded data for safety reason.
-`encrypt($secret)`|<p>`encrypt(string $secret)`</p>Perform data encryption.
-`decrypt($secret)`|<p>`decrypt(string $secret)`</p>Perform data decryption.
-
-Example:
-- Change dbname
-```php
-$db = Monodb\Monodb();
-$db->select('db2')->set('key','value');
-```
-
-- Encrypt data
-```php
-$db->encrypt('123456')->set('key','sangat rahsia');
-```
-- Decrypt data
-```php
-$db->decrypt('123456')->get('key');
-```
 
 
 ## How Versions Work

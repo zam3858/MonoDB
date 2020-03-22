@@ -147,7 +147,13 @@ class Console {
     }
 
     public function run() {
-        $app = new Application( $this->db->name(), 'v'.$this->db->version().' -- '.$this->db->desc().' '.$this->db->url() );
+        $ascii = "\n";
+        $ascii .= "  __  __                   ____  ____  \n";
+        $ascii .= " |  \/  | ___  _ __   ___ |  _ \| __ ) \n";
+        $ascii .= " | |\/| |/ _ \| '_ \ / _ \| | | |  _ \ \n";
+        $ascii .= " | |  | | (_) | | | | (_) | |_| | |_) |\n";
+        $ascii .= " |_|  |_|\___/|_| |_|\___/|____/|____/ \n\n";
+        $app = new Application( $ascii.'<info>'.$this->db->name().'</info> version <comment>'.$this->db->version().'</comment>' );
         $app->setCatchExceptions( true );
         $app->add( new Set( $this ) );
         $app->add( new Get( $this ) );

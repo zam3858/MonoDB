@@ -52,9 +52,13 @@ class Set extends Command {
 
         if ( $is_asarray ) {
             $arr = [];
+            $x = 0;
             foreach ( $value as $n => $v ) {
                 if ( preg_match( '@([^=]+)=([^=]+)@', $v, $mm ) ) {
-                    $arr[ $mm[1] ] = $mm[2];
+                    if ( isset($arr[$x][ $mm[1] ]) ) {
+                        $x++;
+                    }
+                    $arr[$x][ $mm[1] ] = $mm[2];
                 } else {
                     $arr[ $n ] = $v;
                 }
