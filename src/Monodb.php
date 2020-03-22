@@ -449,7 +449,7 @@ class Monodb {
 
         if ( Func::is_file_readable( $file ) ) {
             $meta = $this->data_read( $file );
-            if ( ! \is_array( $meta ) || empty( $meta ) || empty( $meta['value'] ) ) {
+            if ( ! \is_array( $meta ) || empty( $meta ) || ( empty( $meta['value'] ) && 0 !== (int)$meta['value']) ) {
                 $this->delete( $key );
                 return false;
             }
@@ -739,28 +739,25 @@ class Monodb {
         $num = ( ! empty( $num ) ? $num : 1 );
         if ( $this->exists( $key ) ) {
             $data = $this->get( $key );
-            if ( ! empty( $data ) && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
+            if ( ! empty( $data ) && 0 !== (int)$data && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
                 if ( $num > PHP_INT_MAX ) {
-                    return false;
+                    return 1;
                 }
 
                 $data = ( $data + $num );
-                if ( $data < 0 ) {
-                    $data = 1;
-                }
 
                 if ( $data > PHP_INT_MAX ) {
-                    return false;
+                    return PHP_INT_MAX;
                 }
 
                 if ( $this->set( $key, $data ) ) {
                     return $data;
                 }
             }
-        } else {
-            if ( false !== $this->set( $key, 1 ) ) {
-                return 1;
-            }
+        }
+
+        if ( false !== $this->set( $key, 1 ) ) {
+            return 1;
         }
         return false;
     }
@@ -776,21 +773,21 @@ class Monodb {
             $data = $this->get( $key );
             if ( ! empty( $data ) && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
                 if ( $num > PHP_INT_MAX ) {
-                    return false;
+                    return 1;
                 }
 
                 $data = ( $data - $num );
-                if ( $data < PHP_INT_MAX ) {
-                    $data = 0;
+                if ( $data < -PHP_INT_MAX ) {
+                    $data = -PHP_INT_MAX;
                 }
                 if ( $this->set( $key, $data ) ) {
                     return $data;
                 }
             }
-        } else {
-            if ( false !== $this->set( $key, 0 ) ) {
-                return 0;
-            }
+        }
+        
+        if ( false !== $this->set( $key, 0 ) ) {
+            return 0;
         }
         return false;
     }

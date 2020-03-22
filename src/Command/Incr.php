@@ -47,8 +47,9 @@ class Incr extends Command {
         $console = $this->console;
         $results = ( $is_meta ? $console->db->meta()->incr( $key, $number ) : $console->db->incr( $key, $number ) );
 
-        if ( false === $results ) {
-            $console->output_raw( $output, $console->db->last_error() );
+        $error = $console->db->last_error();
+        if ( !empty($error) ) {
+            $console->output_raw( $output, $error );
             return 1;
         }
 

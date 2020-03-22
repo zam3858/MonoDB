@@ -47,7 +47,7 @@ class Console {
     }
 
     public function output_raw( $output, $data ) {
-        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) ? $data : 'nil' ) );
+        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) && 0 !== (int)$data ? $data : 'nil' ) );
         $output->writeln( $data );
     }
 

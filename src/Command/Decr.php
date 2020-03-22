@@ -47,8 +47,9 @@ class Decr extends Command {
         $console = $this->console;
         $results = ( $is_meta ? $console->db->meta()->decr( $key, $number ) : $console->db->decr( $key, $number ) );
 
-        if ( false === $results ) {
-            $console->output_raw( $output, $console->db->last_error() );
+        $error = $console->db->last_error();
+        if ( !empty($error) ) {
+            $console->output_raw( $output, $error );
             return 1;
         }
 
