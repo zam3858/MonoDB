@@ -35,7 +35,7 @@ Load library using composer autoload.
 require 'vendor/autoload.php';
 ```
 
-Alternatively, if you're not using Composer, download the [files](https://github.com/nawawi/MonoDB/releases) and copy the contents of the MonoDB folder into one of the include_path directories specified in your PHP configuration and load MonoDB class file manually:
+Alternatively, if you're not using Composer, download the [files](https://github.com/nawawi/MonoDB/archive/master.zip) and copy the contents of the MonoDB folder into one of the include_path directories specified in your PHP configuration and load MonoDB class file manually:
 
 ```php
 require 'path-to-monodb-dir/autoload.php';
