@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
+putenv('MONODB_ENV='.__DIR__.'/.monodb.env');
 require_once( __DIR__.'/../autoload.php' );
-
 use Monodb\Console;
 $app = new Console();
 $app->run();
