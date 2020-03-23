@@ -24,6 +24,7 @@ use Monodb\Command\Flush;
 use Monodb\Command\Info;
 use Monodb\Command\Exists;
 use Monodb\Command\Find;
+use Monodb\Command\Expire;
 
 class Console {
     public $options = [];
@@ -47,7 +48,7 @@ class Console {
     }
 
     public function output_raw( $output, $data ) {
-        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) && 0 !== (int)$data ? $data : 'nil' ) );
+        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) || 0 === (int)$data ? $data : 'nil' ) );
         $output->writeln( $data );
     }
 
@@ -66,6 +67,12 @@ class Console {
             $data = file_get_contents( $file );
             $data = trim( $data );
             if ( ! empty( $data ) ) {
+                if ( !empty($_SERVER['argv']) && in_array('--format=md', $_SERVER['argv']) ) {
+                    $data = str_replace('Return value', '### Return value', $data);
+                    $data = str_replace('Examples', '### Examples', $data);
+                    $data = str_replace('Supported wildcard patterns', '### Supported wildcard patterns', $data);
+                    $data = str_replace('Use \'--', '- Use \'--', $data);
+                }
                 if ( Func::end_with( $data, '</info>' ) ) {
                     return $data;
                 }
@@ -128,10 +135,16 @@ class Console {
             'help' => $this->get_help_text( $name )
         ];
 
+        $data['expire'] = [
+            'desc' => 'Set or reset a timeout on existing key',
+            'help' => $this->get_help_text( $name )
+        ];
+
         $data['args'] = [
             'key' => 'Key pattern',
             'value' => 'Value string',
             'expire' => 'Set a timeout on key. The expiry value in seconds',
+            'timeout' => 'The timeout value in seconds',
             'raw' => 'To output raw data',
             'meta' => 'To output meta data',
             'section' => 'Display section info',
@@ -147,7 +160,7 @@ class Console {
     }
 
     public function run() {
-        $ascii = "\n";
+        $ascii = "";
         $ascii .= "  __  __                   ____  ____  \n";
         $ascii .= " |  \/  | ___  _ __   ___ |  _ \| __ ) \n";
         $ascii .= " | |\/| |/ _ \| '_ \ / _ \| | | |  _ \ \n";
@@ -165,6 +178,7 @@ class Console {
         $app->add( new Flush( $this ) );
         $app->add( new Info( $this ) );
         $app->add( new Exists( $this ) );
+        $app->add( new Expire( $this ) );
         $app->run();
     }
 }

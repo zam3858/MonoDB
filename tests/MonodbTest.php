@@ -1,112 +1,109 @@
 <?php
-namespace Monodb;
-
 use PHPUnit\Framework\TestCase;
 
 class ApiTest extends TestCase {
-    public function testConfig() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
+    private $config;
+    private function db() {
+        $this->config = [
+            'dbname' => 'phpunit'
+        ];
+        $db = new Monodb\Monodb($this->config);
+        return $db;
+    }
 
-        $input = $db->info( 'config:dir' );
-        $results = $config['dir'];
+    public function testConfig() {
+        $input = $this->db()->info( 'config:dbname' );
+        $results = $this->config['dbname'];
         $this->assertEquals( $input, $results );
     }
 
     public function testSet() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->set( 'greeting', 'hello world!' );
+        $input = $this->db()->set( 'greeting', 'hello world!' );
         $results = 'greeting';
         $this->assertEquals( $input, $results );
     }
 
     public function testGet() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->get( 'greeting' );
+        $input = $this->db()->get( 'greeting' );
         $results = 'hello world!';
         $this->assertEquals( $input, $results );
     }
 
     public function testFind() {
-           $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->find('greeting', 'hello world!');
+        $input = $this->db()->find('greeting', 'hello world!');
         $results = 'hello world!';
         $this->assertEquals( $input, $results );
     }
 
     public function testIncr1() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->incr('incr');
+        $input = $this->db()->incr('incr');
         $results = 1;
         $this->assertEquals( $input, $results );
     }
 
     public function testIncr2() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->incr('incr', 10);
+        $input = $this->db()->incr('incr', 10);
         $results = 11;
         $this->assertEquals( $input, $results );
     }
 
     public function testDecr1() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->decr('incr');
+        $input = $this->db()->decr('incr');
         $results = 10;
         $this->assertEquals( $input, $results );
     }
 
     public function testDecr2() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->decr('incr', 10);
+        $input = $this->db()->decr('incr', 10);
         $results = 0;
         $this->assertEquals( $input, $results );
     }
 
     public function testKeys() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->keys();
+        $input = $this->db()->keys();
         $results[0] = 'greeting';
         $results[1] = 'incr';
         $this->assertEquals( $input, $results );
     }
 
-    /*public function testDelete() {
-        $dir = realpath( __DIR__ ).'/';
-        $db = new Monodb(
-            [
-                'dir' => $dir,
-                'dbname' => 'phpunit'
-            ]
-        );
+    public function testDelete() {
+        $key = 'key1';
+        $this->db()->set($key,1);
+        $input = $this->db()->delete($key);
+        $results = $key;
+        $this->assertEquals( $input, $results );
+    }
 
-        $keys[0] = 'greeting';
-        $keys[1] = 'incr';
+    public function testMdelete() {
+        $keys = [
+            'key1',
+            'key2',
+            'key3'
+        ];
 
-        $input = $db->delete();
+        foreach($keys as $key) {
+            $this->db()->set($key,1);
+        }
+        $input = $this->db()->mdelete($keys[0],$keys[1],$keys[2]);
+        $results = $keys;
+        $this->assertEquals( $input, $results );
+    }
 
-    }*/
+    public function testSetExpire() {
+        $timeout = 1;
+        $this->db()->set('key',1, $timeout );
+        sleep(2);
+        $input = false;
+        $results = true;
+        $this->db()->get('key', $debug);
+        if ( !empty($debug) && \is_array($debug) && 'expired' === $debug['status'] ) {
+            $results = false;
+        }
+        $this->assertEquals( false, $results );
+    }
 
     public function testFlush() {
-        $config = include(__DIR__.'/config.php');
-        $db = new Monodb($config);
-
-        $input = $db->flush();
+        $input = $this->db()->flush();
         $results = $input;
         $this->assertEquals( $input, $results );
     }

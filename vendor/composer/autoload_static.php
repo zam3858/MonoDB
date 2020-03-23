@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitec264a7beea82046067c6b1b3aa1f1be
+class ComposerStaticInitc5099de2837420cff46a4e6c879a3d57
 {
     public static $files = array (
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
@@ -90,6 +90,7 @@ class ComposerStaticInitec264a7beea82046067c6b1b3aa1f1be
         'Monodb\\Command\\Decr' => __DIR__ . '/../..' . '/src/Command/Decr.php',
         'Monodb\\Command\\Del' => __DIR__ . '/../..' . '/src/Command/Del.php',
         'Monodb\\Command\\Exists' => __DIR__ . '/../..' . '/src/Command/Exists.php',
+        'Monodb\\Command\\Expire' => __DIR__ . '/../..' . '/src/Command/Expire.php',
         'Monodb\\Command\\Find' => __DIR__ . '/../..' . '/src/Command/Find.php',
         'Monodb\\Command\\Flush' => __DIR__ . '/../..' . '/src/Command/Flush.php',
         'Monodb\\Command\\Get' => __DIR__ . '/../..' . '/src/Command/Get.php',
@@ -231,9 +232,9 @@ class ComposerStaticInitec264a7beea82046067c6b1b3aa1f1be
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitec264a7beea82046067c6b1b3aa1f1be::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitec264a7beea82046067c6b1b3aa1f1be::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitec264a7beea82046067c6b1b3aa1f1be::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitc5099de2837420cff46a4e6c879a3d57::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitc5099de2837420cff46a4e6c879a3d57::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitc5099de2837420cff46a4e6c879a3d57::$classMap;
 
         }, null, ClassLoader::class);
     }

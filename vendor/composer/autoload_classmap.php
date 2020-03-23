@@ -10,6 +10,7 @@ return array(
     'Monodb\\Command\\Decr' => $baseDir . '/src/Command/Decr.php',
     'Monodb\\Command\\Del' => $baseDir . '/src/Command/Del.php',
     'Monodb\\Command\\Exists' => $baseDir . '/src/Command/Exists.php',
+    'Monodb\\Command\\Expire' => $baseDir . '/src/Command/Expire.php',
     'Monodb\\Command\\Find' => $baseDir . '/src/Command/Find.php',
     'Monodb\\Command\\Flush' => $baseDir . '/src/Command/Flush.php',
     'Monodb\\Command\\Get' => $baseDir . '/src/Command/Get.php',

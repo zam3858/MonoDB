@@ -44,10 +44,18 @@ class Keys extends Command {
 
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
         $is_meta = ( ! empty( $input->getOption( 'meta' ) ) ? true : false );
-        $results = ( $is_meta ? $this->console->db->meta()->keys( $key ) : $this->console->db->keys( $key ) );
 
-        if ( false === $results ) {
-            $this->console->output_raw( $output, $this->console->db->last_error() );
+        $console = $this->console;
+        $results = ( $is_meta ? $console->db->meta()->keys( $key ) : $console->db->keys( $key ) );
+
+        $error = $console->db->last_error();
+        if ( !empty($error) ) {
+            $console->output_raw( $output, $error );
+            return 1;
+        }
+
+        if ( empty($results) ) {
+            $console->output_nil( $output );
             return 1;
         }
 
