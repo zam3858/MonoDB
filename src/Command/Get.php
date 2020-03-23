@@ -52,14 +52,15 @@ class Get extends Command {
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
         $is_meta = ( ! empty( $input->getOption( 'meta' ) ) ? true : false );
 
+        $console = $this->console;
         if ( Func::has_with( $key, '*' ) ) {
-            $key_r = $this->console->db->keys( $key );
+            $key_r = $console->db->keys( $key );
             if ( ! empty( $key_r ) ) {
                 $key = $key_r[0];
             }
         }
 
-        $db = $this->console->db;
+        $db = $console->db;
         if ( $is_decrypt ) {
             $db = $db->decrypt( $decrypt_key );
         }
@@ -74,8 +75,14 @@ class Get extends Command {
 
         $results = $db->get( $key );
 
-        if ( false === $results ) {
-            $this->console->output_raw( $output, $this->console->db->last_error() );
+        $error = $db->last_error();
+        if ( !empty($error) ) {
+            $console->output_raw( $output, $error );
+            return 1;
+        }
+
+        if ( empty($results) ) {
+            $console->output_nil( $output );
             return 1;
         }
 
@@ -85,24 +92,24 @@ class Get extends Command {
                 $question = new ConfirmationQuestion( "File '.$saveto.' already exists. Continue with this action? (Y/N): ", false );
 
                 if ( ! $helper->ask( $input, $output, $question ) ) {
-                    $this->console->output_nil( $output );
+                    $console->output_nil( $output );
                     return 1;
                 }
             }
 
             if ( '/' !== $saveto && '.' !== $saveto && ! is_dir( $saveto ) && file_put_contents( $saveto, $results ) ) {
-                $this->console->output_raw( $output, $saveto );
+                $console->output_raw( $output, $saveto );
                 return 0;
             }
 
-            $this->console->output_nil( $output );
+            $console->output_nil( $output );
             return 1;
         }
 
         $results = Func::object_to_array( $results );
 
         if ( $is_raw ) {
-            $this->console->output_raw( $output, $results );
+            $console->output_raw( $output, $results );
             return 0;
         }
 
@@ -185,7 +192,7 @@ class Get extends Command {
             }
         }
 
-        $this->console->output_table( $output, $header, $row );
+        $console->output_table( $output, $header, $row );
         return 0;
     }
 }

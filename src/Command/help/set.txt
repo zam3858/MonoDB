@@ -15,7 +15,7 @@ Use file:// scheme to set the file content as a value. The content will encode w
 <info>
 %command.full_name% image file:///fullpath-to-file/file-image.jpg
 </info>
-Use '--expire' option if want to set a timeout on key. The key will remove after reaching the set of the timeout period.
+Use '--expire' option if want to set a timeout on key. The key will be deleted after reaching the set of the timeout period.
 <info>
 %command.full_name% goodbye john --expire=300
 </info>

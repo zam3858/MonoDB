@@ -42,7 +42,7 @@ class Monodb {
      * @return bool Always true
      */
     public function __destruct() {
-         $this->errors = [];
+        $this->errors = [];
         return true;
     }
 
@@ -81,11 +81,11 @@ class Monodb {
     }
 
     /**
-     * catch_error().
+     * catch_debug().
      *
      * @access private
      */
-    private function catch_error( $caller, $status ) {
+    private function catch_debug( $caller, $status ) {
         $log = [
             'timestamp' => gmdate( 'Y-m-d H:i:s' ).' UTC',
             'caller' => $caller,
@@ -106,18 +106,6 @@ class Monodb {
      */
     public function last_error() {
          return $this->errors;
-    }
-
-    /**
-     * create_data_dir().
-     *
-     * @access private
-     */
-    private function create_data_dir() {
-        if ( ! is_dir( $this->config->dbdir ) && ! mkdir( $this->config->dbdir, $this->config->perm_dir, true ) ) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -249,7 +237,7 @@ class Monodb {
         try {
             $data = include( $file );
         } catch ( \Exception $e ) {
-            $this->catch_error( __METHOD__, $e->getMessage() );
+            $this->catch_debug( __METHOD__, $e->getMessage() );
         }
         return $data;
     }
@@ -326,7 +314,7 @@ class Monodb {
                 try {
                     $data = file_get_contents( $fi );
                 } catch ( \Exception $e ) {
-                    $this->catch_error( __METHOD__, $e->getMessage() );
+                    $this->catch_debug( __METHOD__, $e->getMessage() );
                 }
             }
         }
@@ -378,14 +366,14 @@ class Monodb {
         ];
 
         if ( 'closure' === $meta['type'] || 'resource' === $meta['type'] ) {
-            $this->catch_error( __METHOD__, 'Data type not supported: '.$meta['type'] );
+            $this->catch_debug( __METHOD__, 'Data type not supported: '.$meta['type'] );
             return false;
         }
 
         if ( 'binary' === $meta['type'] ) {
             $blob_size = (int) $meta['size'];
             if ( $blob_size >= $this->config->blob_size ) {
-                $this->catch_error( __METHOD__, 'Maximum binary size exceeded: '.$blob_size );
+                $this->catch_debug( __METHOD__, 'Maximum binary size exceeded: '.$blob_size );
                 return false;
             }
 
@@ -423,7 +411,7 @@ class Monodb {
             return $key;
         }
 
-        $this->catch_error( __METHOD__, 'Failed to set '.$key );
+        $this->catch_debug( __METHOD__, 'Failed to set '.$key );
         return false;
     }
 
@@ -432,10 +420,11 @@ class Monodb {
      *
      * @access public
      */
-    public function get( string $key ) {
+    public function get( string $key, &$debug = [] ) {
         $key = $this->sanitize_key( $key );
 
         if ( ! $this->exists( $key ) ) {
+            $debug[] = 'Key '.$key.' not exists';
             return false;
         }
 
@@ -451,23 +440,22 @@ class Monodb {
             $meta = $this->data_read( $file );
             if ( ! \is_array( $meta ) || empty( $meta ) || ( empty( $meta['value'] ) && 0 !== (int)$meta['value']) ) {
                 $this->delete( $key );
+                $debug[] = 'Delete Invalid data';
                 return false;
             }
 
             if ( ! empty( $meta['expiry'] ) && Func::is_var_num( $meta['expiry'] ) ) {
                 if ( time() >= (int) $meta['expiry'] ) {
                     $this->delete( $key );
-                    $this->catch_error(
-                        __METHOD__,
-                        [
+                    $debug = [
                             'status' => 'expired',
                             'Key' => $key,
                             'Expiry' => gmdate(
                                 'Y-m-d H:i:s',
                                 $meta['expiry']
                             )
-                        ]
-                    );
+                        ];
+                    $this->catch_debug(__METHOD__, $debug);
                     return false;
                 }
             }
@@ -799,13 +787,24 @@ class Monodb {
      */
     public function expire( string $key, $expiry = 0 ) {
         $data = $this->meta()->get( $key );
-        if ( ! empty( $data ) && \is_array( $data ) && ! empty( $data['key'] ) && ! empty( $expiry ) && Func::is_var_num( $expiry ) ) {
-            $expiry = (int) $expiry;
-            if ( $expiry > 0 ) {
-                $data['expiry'] = $expiry;
-                return $this->data_update( $key, $data );
+        if ( ! empty( $data ) && \is_array( $data ) && ! empty( $data['key'] ) ) {
+            if ( ! empty( $expiry ) && Func::is_var_num( $expiry ) ) {
+                $expiry = (int) $expiry;
+                if ( $expiry > 0 ) {
+                    $data['expiry'] = ( time()+$expiry );
+                    if ( false !== $this->data_update( $key, $data ) ) {
+                        return ['key' => $key, 'expiry' => gmdate('Y-m-d H:i:s', $data['expiry']).' UTC' ];
+                    }
+                }
+            }
+
+            // reset
+            $data['expiry'] = 0;
+            if ( false !== $this->data_update( $key, $data ) ) {
+                return ['key' => $key, 'expiry' => $data['expiry'] ];
             }
         }
+
         return false;
     }
 

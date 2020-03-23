@@ -1,0 +1,20 @@
+Set or reset a timeout on existing key. The key will be deleted after reaching the set of the timeout period.
+If the timeout set to 0, the timeout will be cancelled.
+
+<fg=cyan>Return value</>
+
+The expiry info if successful, nil otherwise.
+
+<fg=cyan>Examples</>
+<info>
+%command.full_name% expire run 10
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% expire run 10 --raw
+</info>
+Use '--meta' option if want to output internal data schema.
+<info>
+%command.full_name% expire run 10 --meta
+</info>
+
