@@ -9,7 +9,7 @@ Simple by design, included with console command, intends to provide as alternati
 - [Report issues](https://github.com/nawawi/MonoDB/issues)
 - [Send Pull requests](https://github.com/nawawi/MonoDB/pulls)
 
-![Console](https://static.monodb.io/console-700x455.jpg)
+![Console](https://static.monodb.io/console.jpg)
 ## Features
 - Key/Value Data Storing
 - Array-based Data Structure
