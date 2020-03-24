@@ -4,8 +4,8 @@ MonoDB is flat-file key-value data structure store, used as a database, cache an
 
 Simple by design, included with console command, intends to provide as alternative options when you need quick and reliable way to store and retrieve data without require a server-based database.
 
-- [Console Commands](https://github.com/nawawi/MonoDB/wiki/Base-Methods)
-- [API Reference](https://github.com/nawawi/MonoDB/wiki/Command-Set)
+- [API Reference](https://github.com/nawawi/MonoDB/wiki/Base-Methods)
+- [Console Commands](https://github.com/nawawi/MonoDB/wiki/Command-Set)
 - [Report issues](https://github.com/nawawi/MonoDB/issues)
 - [Send Pull requests](https://github.com/nawawi/MonoDB/pulls)
 
