@@ -60,7 +60,7 @@ require 'path-to-monodb-dir/autoload.php';
 
 
 ## Basic Usage
-
+- Library
 ```php
 <?php
 use Monodb;
@@ -81,8 +81,25 @@ echo $response;
 // Retrieve and display the value of "greeting" key.
 echo $db->get( 'greeting' );
 ```
+- Console
+  
+```
+monodb set greeting 'hello world!'
++----------+
+| Key      |
++----------+
+| greeting |
++----------+
+```
 
-
+```
+monodb get greeting
++----------+--------------+
+| Key      | Value        |
++----------+--------------+
+| greeting | hello world! |
++----------+--------------+
+```
 ## Config Options
 
 You can configure and change default MonoDB options.
@@ -116,6 +133,17 @@ Name|Type|Default Value|Description
 `key_expiry`|int|0|Default key expiry in timestamp for all keys.
 `perm_dir`|int|0755|Default Unix directory permission.
 `perm_file`|int|0644|Default Unix file permission.
+
+
+By default, console command will read the configuration from '.monodb.env' file located in HOME, DOCUMENT_ROOT and same working directory with the console.
+```
+DIR=
+DBNAME=
+KEY_LENGTH=
+BLOB_SIZE=
+PERM_DIR=
+PERM_FILE=
+```
 
 ## How Versions Work
 
