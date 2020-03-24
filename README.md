@@ -28,7 +28,7 @@ MonoDB is flat-file key-value data structure store, used as a simple database, c
 Use [Composer](http://getcomposer.org/) to install package.
 
 ```sh
-composer require nawawi/monodb:1.0.x-dev
+composer require nawawi/monodb dev-master
 ```
 Load library using composer autoload.
 ```php
