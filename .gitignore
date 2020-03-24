@@ -44,6 +44,10 @@
 /vendor/symfony/polyfill-php73/README.md
 /vendor/symfony/console/README.md
 /vendor/psr/container/README.md
+/vendor/symfony/var-exporter/CHANGELOG.md
+/vendor/symfony/string/CHANGELOG.md
+/vendor/symfony/service-contracts/CHANGELOG.md
+/vendor/symfony/console/CHANGELOG.md
 /vendor/symfony/var-exporter/phpunit.xml.dist
 /vendor/symfony/string/phpunit.xml.dist
 /vendor/symfony/console/phpunit.xml.dist
