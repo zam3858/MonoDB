@@ -50,6 +50,8 @@ class Set extends Command {
         $is_asarray = ( ! empty( $input->getOption( 'as-array' ) ) ? true : false );
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
 
+        set_error_handler( function() {}, E_WARNING | E_NOTICE );
+
         if ( $is_asarray ) {
             $arr = [];
             $x = 0;

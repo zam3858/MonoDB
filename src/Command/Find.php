@@ -42,6 +42,8 @@ class Find extends Command {
 
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
 
+        set_error_handler( function() {}, E_WARNING | E_NOTICE );
+
         $arr = [];
         foreach ( $value as $n => $v ) {
             if ( preg_match( '@([^=]+)=([^=]+)@', $v, $mm ) ) {

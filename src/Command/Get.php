@@ -52,6 +52,8 @@ class Get extends Command {
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
         $is_meta = ( ! empty( $input->getOption( 'meta' ) ) ? true : false );
 
+        set_error_handler( function() {}, E_WARNING | E_NOTICE );
+
         $console = $this->console;
         if ( Func::has_with( $key, '*' ) ) {
             $key_r = $console->db->keys( $key );
@@ -160,15 +162,19 @@ class Get extends Command {
                 $row[] = $r;
             } else {
 
-                if ( \count( $results ) === 1 ) {
+                if ( \count( $results, 1 ) === 1 ) {
                     $results = each( $results );
                     $header[] = ( 0 === $results[0] ? 'Value' : $results[0] );
                     $row[] = [ $results[1] ];
                 } else {
+                    $has_a = false;
                     foreach ( $results as $k => $arr ) {
                         if ( \is_array( $arr ) ) {
                             if ( empty( $header ) ) {
                                 $header = array_keys( $arr );
+                                if ( !empty($header) ) {
+                                    $has_a = true;
+                                }
                             }
                             $row2 = array_values( $arr );
                             foreach ( $row2 as $a => $b ) {
@@ -179,6 +185,10 @@ class Get extends Command {
                             }
                             $row[] = $row2;
                         } else {
+                            if ( $has_a ) {
+                                $p[$arr] = $arr;
+                                $header = array_merge($header, $p);
+                            }
                             if ( empty( $header ) ) {
                                 $header = array_keys( $results );
                             }

@@ -48,6 +48,8 @@ class Keys extends Command {
         $console = $this->console;
         $results = ( $is_meta ? $console->db->meta()->keys( $key ) : $console->db->keys( $key ) );
 
+        set_error_handler( function() {}, E_WARNING | E_NOTICE );
+
         $error = $console->db->last_error();
         if ( !empty($error) ) {
             $console->output_raw( $output, $error );
