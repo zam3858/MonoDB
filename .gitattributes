@@ -6,5 +6,6 @@
 /.phpcs.xml export-ignore
 /phpunit.xml export-ignore
 /README.md export-ignore
+/autoload.php export-ignore
 /vendor export-ignore
 /tests export-ignore

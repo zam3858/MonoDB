@@ -1,19 +1,27 @@
 
 # ![MonoDB](https://static.monodb.io/logo-150x150.svg) MonoDB
-MonoDB is flat-file key-value data structure store, used as a simple database, cache and message broker.
+MonoDB is flat-file key-value data structure store, used as a database, cache and message broker. 
 
+Simple by design, included with console command, intends to provide as alternative options when you need quick and reliable way to store and retrieve data without require a server-based database.
 
+- [Console Commands](https://github.com/nawawi/MonoDB/wiki/Base-Methods)
+- [API Reference](https://github.com/nawawi/MonoDB/wiki/Command-Set)
+- [Report issues](https://github.com/nawawi/MonoDB/issues)
+- [Send Pull requests](https://github.com/nawawi/MonoDB/pulls)
+
+![Console](https://static.monodb.io/console-500x325.jpg)
 ## Features
 - Key/Value Data Storing
 - Array-based Data Structure
 - Key Expires
-- Support multiple type of data
-- Can store binary file
+- Support multiple data structure
+- Can store content of file
 - Encrypt/Decrypt data
 - File locking
 
 
-## Supported data type
+## Supported data structures
+
 - string
 - integer
 - float
@@ -24,29 +32,34 @@ MonoDB is flat-file key-value data structure store, used as a simple database, c
 
 
 ## Installation
+To use MonoDB require minimum PHP 7.1 and json extension installed.
 
 Use [Composer](http://getcomposer.org/) to install package.
 
 ```sh
 composer require nawawi/monodb dev-master
 ```
-Load library using composer autoload.
+- Load library using composer autoload.
 ```php
 require 'vendor/autoload.php';
 ```
+- Accessing Console
+```
+./vendor/bin/monodb
+```
 
-Alternatively, if you're not using Composer, download the [files](https://github.com/nawawi/MonoDB/archive/master.zip) and copy the contents of the MonoDB folder into one of the include_path directories specified in your PHP configuration and load MonoDB class file manually:
+Alternatively, if you're not using Composer, download the [file](https://github.com/nawawi/MonoDB/archive/master.zip), unzip and load autoload file.
 
 ```php
 require 'path-to-monodb-dir/autoload.php';
 ```
+- Accessing Console
+```
+./path-to-monodb-dir/bin/monodb
+```
 
-## Minimum Requirement
-- PHP 7.1+
-- PHP json extension
 
-
-## Usage
+## Basic Usage
 
 ```php
 // Setting the data directory and database name.
@@ -90,8 +103,8 @@ $db = new Monodb(
 
 Name|Type|Default Value|Description
 :---|:---|:---|:---
-`dir`|string|current directory|The directory where the database are stored.
-`dbname`|string|monodb0|The directory where the data files are stored.
+`dir`|string|<temp-dir\>/\_monodb\_|The directory where the database are stored.
+`dbname`|string|db0|The directory where the data files are stored.
 `key_length`|int|50|Maximum key length. Larger than this will truncated.
 `blob_size`|int|5000000|Maximum size in byte of binary file can be stored.
 `key_expiry`|int|0|Default key expiry in timestamp for all keys.
