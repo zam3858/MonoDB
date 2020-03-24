@@ -70,45 +70,13 @@ class Functions {
     }
 
     /**
-     * int_to_char().
-     */
-    public static function int_to_char( $int ) {
-        if ( ! \is_int( $int ) ) {
-            return $int;
-        }
-
-        if ( $int < -128 || $int > 255 ) {
-            return (string) $int;
-        }
-
-        if ( $int < 0 ) {
-            $int += 256;
-        }
-
-        return \chr( $int );
-    }
-
-    /**
-     * is_var_binary().
-     */
-    public static function ctype_print( $text ) {
-        $text = self::int_to_char( $text );
-        return ( \is_string( $text ) && '' !== $text && ! preg_match( '/[^ -~]/', $text ) );
-    }
-
-    /**
      * is_var_binary().
      */
     public static function is_var_binary( $blob ) {
         if ( \is_null( $blob ) || \is_integer( $blob ) ) {
             return false;
         }
-
-        if ( function_exists( 'ctype_print' ) ) {
-            return ! ctype_print( $blob );
-        }
-
-        return ! self::ctype_print( $blob );
+        return !ctype_print( $blob );
     }
 
     /**

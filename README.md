@@ -2,7 +2,7 @@
 # ![MonoDB](https://static.monodb.io/logo-150x150.svg) MonoDB
 MonoDB is flat-file key-value data structure store, used as a database, cache and message broker. 
 
-Simple by design, included with console command, intends to provide as alternative options when you need quick and reliable way to store and retrieve data without require a server-based database.
+Simple by design, included with console command, intends to provide as alternative options when you need quick and reliable way to store and retrieve data without require a server-based application.
 
 - [API Reference](https://github.com/nawawi/MonoDB/wiki/Base-Methods)
 - [Console Commands](https://github.com/nawawi/MonoDB/wiki/Command-Set)
@@ -20,7 +20,7 @@ Simple by design, included with console command, intends to provide as alternati
 - File locking
 
 
-## Supported data structures
+## Supported data type
 
 - string
 - integer
@@ -62,6 +62,9 @@ require 'path-to-monodb-dir/autoload.php';
 ## Basic Usage
 
 ```php
+<?php
+use Monodb;
+
 // Setting the data directory and database name.
 $db = new Monodb(
     [
@@ -87,6 +90,9 @@ You can configure and change default MonoDB options.
 Usage Example (all options)
 
 ```php
+<?php
+use Monodb;
+
 $db = new Monodb(
     [
      	'dir'        => 'path/to/data/dir',
@@ -110,7 +116,6 @@ Name|Type|Default Value|Description
 `key_expiry`|int|0|Default key expiry in timestamp for all keys.
 `perm_dir`|int|0755|Default Unix directory permission.
 `perm_file`|int|0644|Default Unix file permission.
-
 
 ## How Versions Work
 
