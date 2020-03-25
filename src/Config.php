@@ -93,7 +93,7 @@ class Config {
                 return $config;
             }
         } elseif ( !empty($_SERVER['DOCUMENT_ROOT']) ) {
-            $config = $this->parse_config($_SERVER['HOME'].'/.monodb.env');
+            $config = $this->parse_config($_SERVER['DOCUMENT_ROOT'].'/.monodb.env');
             if ( !empty($config) && is_array($config) ) {
                 return $config;
             }

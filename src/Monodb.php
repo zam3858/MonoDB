@@ -334,7 +334,7 @@ class Monodb {
 
         $fc = glob( $dir.'/*.php' );
         if ( empty( $fc ) ) {
-            return \rmdir( $dir.'/' );
+            return rmdir( $dir.'/' );
         }
 
         if ( ! file_exists( $dir.'/index.php' ) ) {
@@ -464,7 +464,7 @@ class Monodb {
             $data_plain = true;
             if ( false !== $this->chain_decrypt && \is_string( $this->chain_decrypt ) && ! empty( $meta['encoded'] ) && ( 2 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'] ) ) {
                 $data_r = Func::decrypt( $data, $this->chain_decrypt );
-                if ( empty( $data_r ) || ! Func::ctype_print( $data_r ) ) {
+                if ( empty( $data_r ) || ! ctype_print( $data_r ) ) {
                     $data_plain = false;
                 } else {
                     $data = $data_r;

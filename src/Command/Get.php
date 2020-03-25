@@ -88,7 +88,7 @@ class Get extends Command {
             return 1;
         }
 
-        if ( $is_saveto && ! Func::ctype_print( $results ) ) {
+        if ( $is_saveto && ! ctype_print( $results ) ) {
             if ( Func::is_file_writable( $saveto ) ) {
                 $helper = $this->getHelper( 'question' );
                 $question = new ConfirmationQuestion( "File '.$saveto.' already exists. Continue with this action? (Y/N): ", false );
