@@ -53,12 +53,5 @@
     },
     "config": {
         "optimize-autoloader": true
-    },
-    "archive": {
-        "exclude": [
-            ".gitignore",
-            "phpunit.xml",
-            "tests"
-        ]
     }
 }
