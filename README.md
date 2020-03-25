@@ -14,7 +14,7 @@ Simple by design, included with console command, intends to provide as alternati
 - Key/Value Data Storing
 - Array-based Data Structure
 - Key Expires
-- Support multiple data type
+- Support multiple data structure
 - Can store content of file
 - Encrypt/Decrypt data
 - File locking
@@ -37,7 +37,7 @@ To use MonoDB require minimum PHP 7.1 and json extension installed.
 Use [Composer](http://getcomposer.org/) to install package.
 
 ```sh
-composer require nawawi/monodb:1.0.0.x-dev
+composer require nawawi/monodb dev-master
 ```
 - Load library using composer autoload.
 ```php

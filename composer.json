@@ -45,6 +45,7 @@
         },
         "classmap": ["src/"]
     },
+    "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
             "dev-master": "1.0.x-dev"
@@ -52,5 +53,17 @@
     },
     "config": {
         "optimize-autoloader": true
+    },
+    "scripts": {
+        "cleanup-non-composer": [
+            "rm -rf vendor/nawawi/monodb/vendor/",
+            "rm -f vendor/nawawi/monodb/autoload.php"
+        ],
+        "post-install-cmd": [
+            "@cleanup-non-composer"
+        ],
+        "post-update-cmd": [
+            "@cleanup-non-composer"
+        ]
     }
 }
