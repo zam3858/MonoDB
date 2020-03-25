@@ -15,7 +15,9 @@ return array(
     'Symfony\\Contracts\\Service\\' => array($vendorDir . '/symfony/service-contracts'),
     'Symfony\\Component\\VarExporter\\' => array($vendorDir . '/symfony/var-exporter'),
     'Symfony\\Component\\String\\' => array($vendorDir . '/symfony/string'),
+    'Symfony\\Component\\Finder\\' => array($vendorDir . '/symfony/finder'),
     'Symfony\\Component\\Console\\' => array($vendorDir . '/symfony/console'),
     'Psr\\Container\\' => array($vendorDir . '/psr/container/src'),
     'Monodb\\' => array($baseDir . '/src'),
+    'Light\\Composer\\' => array($vendorDir . '/light/composer-ignore-plugin'),
 );

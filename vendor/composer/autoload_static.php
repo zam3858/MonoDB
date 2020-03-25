@@ -28,6 +28,7 @@ class ComposerStaticInitd81b8ee1c1f716273c2d4eb61d28195d
             'Symfony\\Contracts\\Service\\' => 26,
             'Symfony\\Component\\VarExporter\\' => 30,
             'Symfony\\Component\\String\\' => 25,
+            'Symfony\\Component\\Finder\\' => 25,
             'Symfony\\Component\\Console\\' => 26,
         ),
         'P' => 
@@ -37,6 +38,10 @@ class ComposerStaticInitd81b8ee1c1f716273c2d4eb61d28195d
         'M' => 
         array (
             'Monodb\\' => 7,
+        ),
+        'L' => 
+        array (
+            'Light\\Composer\\' => 15,
         ),
     );
 
@@ -77,6 +82,10 @@ class ComposerStaticInitd81b8ee1c1f716273c2d4eb61d28195d
         array (
             0 => __DIR__ . '/..' . '/symfony/string',
         ),
+        'Symfony\\Component\\Finder\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/finder',
+        ),
         'Symfony\\Component\\Console\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/console',
@@ -89,10 +98,15 @@ class ComposerStaticInitd81b8ee1c1f716273c2d4eb61d28195d
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
+        'Light\\Composer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/light/composer-ignore-plugin',
+        ),
     );
 
     public static $classMap = array (
         'JsonException' => __DIR__ . '/..' . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
+        'Light\\Composer\\Plugin' => __DIR__ . '/..' . '/light/composer-ignore-plugin/Plugin.php',
         'Monodb\\Command\\Decr' => __DIR__ . '/../..' . '/src/Command/Decr.php',
         'Monodb\\Command\\Del' => __DIR__ . '/../..' . '/src/Command/Del.php',
         'Monodb\\Command\\Exists' => __DIR__ . '/../..' . '/src/Command/Exists.php',
@@ -199,6 +213,27 @@ class ComposerStaticInitd81b8ee1c1f716273c2d4eb61d28195d
         'Symfony\\Component\\Console\\Tester\\ApplicationTester' => __DIR__ . '/..' . '/symfony/console/Tester/ApplicationTester.php',
         'Symfony\\Component\\Console\\Tester\\CommandTester' => __DIR__ . '/..' . '/symfony/console/Tester/CommandTester.php',
         'Symfony\\Component\\Console\\Tester\\TesterTrait' => __DIR__ . '/..' . '/symfony/console/Tester/TesterTrait.php',
+        'Symfony\\Component\\Finder\\Comparator\\Comparator' => __DIR__ . '/..' . '/symfony/finder/Comparator/Comparator.php',
+        'Symfony\\Component\\Finder\\Comparator\\DateComparator' => __DIR__ . '/..' . '/symfony/finder/Comparator/DateComparator.php',
+        'Symfony\\Component\\Finder\\Comparator\\NumberComparator' => __DIR__ . '/..' . '/symfony/finder/Comparator/NumberComparator.php',
+        'Symfony\\Component\\Finder\\Exception\\AccessDeniedException' => __DIR__ . '/..' . '/symfony/finder/Exception/AccessDeniedException.php',
+        'Symfony\\Component\\Finder\\Exception\\ExceptionInterface' => __DIR__ . '/..' . '/symfony/finder/Exception/ExceptionInterface.php',
+        'Symfony\\Component\\Finder\\Finder' => __DIR__ . '/..' . '/symfony/finder/Finder.php',
+        'Symfony\\Component\\Finder\\Glob' => __DIR__ . '/..' . '/symfony/finder/Glob.php',
+        'Symfony\\Component\\Finder\\Iterator\\CustomFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/CustomFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\DateRangeFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/DateRangeFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\DepthRangeFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/DepthRangeFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\ExcludeDirectoryFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/ExcludeDirectoryFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\FileTypeFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/FileTypeFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\FilecontentFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/FilecontentFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\FilenameFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/FilenameFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\FilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/FilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\MultiplePcreFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/MultiplePcreFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\PathFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/PathFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\RecursiveDirectoryIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/RecursiveDirectoryIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\SizeRangeFilterIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/SizeRangeFilterIterator.php',
+        'Symfony\\Component\\Finder\\Iterator\\SortableIterator' => __DIR__ . '/..' . '/symfony/finder/Iterator/SortableIterator.php',
+        'Symfony\\Component\\Finder\\SplFileInfo' => __DIR__ . '/..' . '/symfony/finder/SplFileInfo.php',
         'Symfony\\Component\\String\\AbstractString' => __DIR__ . '/..' . '/symfony/string/AbstractString.php',
         'Symfony\\Component\\String\\AbstractUnicodeString' => __DIR__ . '/..' . '/symfony/string/AbstractUnicodeString.php',
         'Symfony\\Component\\String\\ByteString' => __DIR__ . '/..' . '/symfony/string/ByteString.php',

@@ -30,7 +30,8 @@
         "ext-json": "*",
         "symfony/var-exporter": "^5.0",
         "symfony/console": "^5.0",
-        "symfony/polyfill-ctype": "^1.0"
+        "symfony/polyfill-ctype": "^1.0",
+        "light/composer-ignore-plugin": "~1.0"
     },
     "suggest": {
         "ext-zend-opcache": "Recommended for better performance",
@@ -49,21 +50,23 @@
     "extra": {
         "branch-alias": {
             "dev-master": "1.0.x-dev"
+        },
+        "light-ignore-plugin": {
+            "nawawi/monodb": [
+                "tests",
+                "vendor",
+                ".git",
+                ".github",
+                ".gitattributes",
+                ".gitignore",
+                ".phpcs.xml",
+                "autoload.php",
+                "phpunit.xml",
+                "README.md"
+            ]
         }
     },
     "config": {
         "optimize-autoloader": true
-    },
-    "scripts": {
-        "cleanup-non-composer": [
-            "rm -rf vendor/nawawi/monodb/vendor/",
-            "rm -f vendor/nawawi/monodb/autoload.php"
-        ],
-        "post-install-cmd": [
-            "@cleanup-non-composer"
-        ],
-        "post-update-cmd": [
-            "@cleanup-non-composer"
-        ]
     }
 }
