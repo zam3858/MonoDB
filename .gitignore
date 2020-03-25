@@ -13,6 +13,9 @@
 !/vendor/psr/
 !/vendor/composer/
 !/vendor/autoload.php
+/vendor/psr/container/.gitignore
+/vendor/psr/container/README.md
+/vendor/psr/container/composer.json
 composer*.lock
 composer-dev.json
 *.sh
