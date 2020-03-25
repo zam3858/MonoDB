@@ -65,7 +65,7 @@ class Monodb {
     }
 
     /**
-     * Set class options and create data dir.
+     * Set class options.
      *
      * @access public
      * @param array $options
@@ -100,18 +100,20 @@ class Monodb {
     }
 
     /**
-     * last_error().
+     * Return errors log.
      *
-     * @access private
+     * @access public
+     * @return array $errors
      */
     public function last_error() {
          return $this->errors;
     }
 
     /**
-     * sanitize_key().
+     * Check and replace invalid key.
      *
      * @access private
+     * @return string sanitized key
      */
     private function sanitize_key( string $key ) {
         $key_r = preg_replace( '@[^A-Za-z0-9.-:]@', '', $key );
@@ -122,9 +124,12 @@ class Monodb {
     }
 
     /**
-     * key_path().
+     * Set and create data file.
      *
      * @access private
+     * @param string $key Data key
+     * @param boolean $create (Optional) if set to true, data path will create
+     * @return string fulle path of data file
      */
     private function key_path( $key, $create = true ) {
         $key = md5( $key );
@@ -142,9 +147,11 @@ class Monodb {
     }
 
     /**
-     * data_code().
+     * Convert data to php script.
      *
      * @access private
+     * @param array $data Data to save
+     * @return string php script
      */
     private function data_code( $data ) {
         $code = '<?php'.PHP_EOL;
@@ -153,9 +160,13 @@ class Monodb {
     }
 
     /**
-     * array_search_index().
+     * Searches the array for a given value and returns the first corresponding array/string if successful.
      *
      * @access private
+     * @param array $array_data Array data to search
+     * @param array|string $find_value Array value to find
+     * @param array|string $find_key (Optional) Array key to find
+     * @return array|string|false Returns array or string if found, false otherwise
      */
     private function array_search_index( $array_data, $find_value, $find_key = '' ) {
         if ( \is_array( $array_data ) ) {
@@ -191,9 +202,12 @@ class Monodb {
     }
 
     /**
-     * data_save().
+     * Save data.
      *
      * @access private
+     * @param string $file File to save
+     * @param string $data Data to save
+     * @return boolean Returns true if successful, false otherwise
      */
     private function data_save( $file, $data ) {
         if ( file_put_contents( $file, $data, LOCK_EX ) ) {
@@ -204,9 +218,12 @@ class Monodb {
     }
 
     /**
-     * data_update().
+     * Update data.
      *
      * @access private
+     * @param string $key Data key
+     * @param array $data Data to update
+     * @return string|false Returns key string if successful, false otherwise
      */
     private function data_update( $key, $data ) {
         if ( ! empty( $data ) && \is_array( $data ) && ! empty( $data['timestamp'] ) ) {
@@ -228,9 +245,11 @@ class Monodb {
     }
 
     /**
-     * data_read().
+     * Read data.
      *
      * @access private
+     * @param string $file File to read
+     * @return array|false Returns array if successful, false otherwise
      */
     private function data_read( $file ) {
         $data = false;
@@ -243,9 +262,13 @@ class Monodb {
     }
 
     /**
-     * set_index().
+     * Save index data.
      *
      * @access private
+     * @param string $key Data key
+     * @param string $path Data file
+     * @param array $item Data item
+     * @return boolean Returns true if successful, false otherwise
      */
     private function set_index( $key, $path, $item ) {
         $file = $this->config->dbindex;
@@ -270,9 +293,12 @@ class Monodb {
     }
 
     /**
-     * unset_index().
+     * Remove index data.
      *
      * @access private
+     * @param string $key Data key
+     * @param string $path Data file
+     * @return boolean Returns true if successful, false otherwise
      */
     private function unset_index( $key ) {
         $file = $this->config->dbindex;
@@ -292,9 +318,12 @@ class Monodb {
     }
 
     /**
-     * fetch_file().
+     * Get file content.
      *
      * @access private
+     * @param string $data File fullpath
+     * @param array $extra_meta (Optional) Meta data to add
+     * @return string Returns File content if successful, File fullpath otherwise
      */
     private function fetch_file( $data, &$extra_meta = [] ) {
         if ( \is_string( $data ) && Func::start_with( $data, 'file://' ) ) {
@@ -322,9 +351,11 @@ class Monodb {
     }
 
     /**
-     * flush_key_path().
+     * Remove data directory if empty.
      *
      * @access private
+     * @param string $file Data file
+     * @return boolean Returns true if successful, false otherwise
      */
     private function flush_key_path( $file ) {
         $dir = dirname( $file );
