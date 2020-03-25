@@ -37,7 +37,7 @@ To use MonoDB require minimum PHP 7.1 and json extension installed.
 Use [Composer](http://getcomposer.org/) to install package.
 
 ```sh
-composer require nawawi/monodb dev-master
+composer require nawawi/monodb
 ```
 - Load library using composer autoload.
 ```php
