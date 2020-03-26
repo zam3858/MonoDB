@@ -1,5 +1,6 @@
 
 # ![MonoDB](https://static.monodb.io/logo-150x150.svg) MonoDB
+
 MonoDB is flat-file key-value data structure store, used as a database, cache and message broker. 
 
 Simple by design, included with console command, intends to provide as alternative options when you need quick and reliable solution to store and retrieve data without require a server-based application.
@@ -10,7 +11,9 @@ Simple by design, included with console command, intends to provide as alternati
 - [Send Pull requests](https://github.com/nawawi/MonoDB/pulls)
 
 ![Console](https://static.monodb.io/console.jpg)
+
 ## Features
+
 - Key/Value Data Storing
 - Array-based Data Structure
 - Key Expires
@@ -32,6 +35,7 @@ Simple by design, included with console command, intends to provide as alternati
 
 
 ## Installation
+
 To use MonoDB require minimum PHP 7.1 and json extension installed.
 
 Use [Composer](http://getcomposer.org/) to install package.
@@ -60,6 +64,7 @@ require 'path-to-monodb-dir/autoload.php';
 
 
 ## Basic Usage
+
 - Library
 ```php
 <?php
@@ -100,6 +105,7 @@ monodb get greeting
 | greeting | hello world! |
 +----------+--------------+
 ```
+
 ## Config Options
 
 You can configure and change default MonoDB options.

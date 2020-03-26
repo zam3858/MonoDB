@@ -30,7 +30,8 @@
         "ext-json": "*",
         "symfony/var-exporter": "^5.0",
         "symfony/console": "^5.0",
-        "symfony/polyfill-ctype": "^1.0"
+        "symfony/polyfill-ctype": "^1.8",
+        "voku/arrayy": "dev-master"
     },
     "suggest": {
         "ext-zend-opcache": "Recommended for better performance"
