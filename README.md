@@ -48,7 +48,7 @@ require 'vendor/autoload.php';
 ./vendor/bin/monodb
 ```
 
-Alternatively, if you're not using Composer, download the [file](https://github.com/nawawi/MonoDB/archive/master.zip), unzip and load autoload file.
+Alternatively, if you're not using Composer, download the [MonoDB-dist](https://github.com/nawawi/MonoDB/releases/) file, extract and load autoload file.
 
 ```php
 require 'path-to-monodb-dir/autoload.php';

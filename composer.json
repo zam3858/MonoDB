@@ -33,8 +33,7 @@
         "symfony/polyfill-ctype": "^1.0"
     },
     "suggest": {
-        "ext-zend-opcache": "Recommended for better performance",
-        "ext-ctype": "For best performance"
+        "ext-zend-opcache": "Recommended for better performance"
     },
     "bin": [
         "bin/monodb"
