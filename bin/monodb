@@ -1,7 +1,16 @@
 #!/usr/bin/env php
 <?php
-putenv('MONODB_ENV='.__DIR__.'/.monodb.env');
-require_once( __DIR__.'/../autoload.php' );
-use Monodb\Console;
-$app = new Console();
-$app->run();
+if ( 'cli' === php_sapi_name() && ! empty( $_SERVER['SCRIPT_NAME'] ) ) {
+    $dir = realpath(dirname($_SERVER['SCRIPT_NAME']));
+    $config = $dir.'/../autoload.php';
+    if ( !file_exists($config) ) {
+        echo "autoload file not found\n";
+        exit(1);
+    }
+    putenv('MONODB_ENV='.$dir.'/.monodb.env');
+    require_once( $config );
+    $app = new Monodb\Console();
+    $app->run();
+}
+echo "Invalid console\n";
+exit(1);
