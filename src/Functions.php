@@ -9,7 +9,6 @@
  */
 
 namespace Monodb;
-
 use \Symfony\Component\VarExporter\VarExporter;
 
 class Functions {
@@ -76,7 +75,7 @@ class Functions {
         if ( \is_null( $blob ) || \is_integer( $blob ) ) {
             return false;
         }
-        return !ctype_print( $blob );
+        return ! ctype_print( $blob );
     }
 
     /**
@@ -189,7 +188,7 @@ class Functions {
     /**
      * match_wildcard(().
      */
-    public static function match_wildcard( string $string, string $matches ) {
+    public static function match_wildcard( string $string, $matches ): bool {
         foreach ( (array) $matches as $match ) {
             if ( self::has_with( $match, [ '*', '?' ] ) ) {
                 $wildcard_chars = [ '\*', '\?' ];
@@ -234,13 +233,6 @@ class Functions {
     }
 
     /**
-     * object_to_array().
-     */
-    public static function object_to_array( $object ) {
-        return json_decode( json_encode( $object ), true );
-    }
-
-    /**
      * get_type().
      */
     public static function get_type( $data ) {
@@ -273,7 +265,7 @@ class Functions {
     }
 
     /**
-     * var_export().
+     * export_var().
      */
     public static function export_var( $data ) {
         return preg_replace( '@,(\s*)?\]@s', '$1]', VarExporter::export( $data ) );

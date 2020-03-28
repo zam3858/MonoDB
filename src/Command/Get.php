@@ -11,23 +11,23 @@ namespace Monodb\Command;
 
 use Monodb\Monodb;
 use Monodb\Functions as Func;
+use Monodb\Arrays as Arr;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class Get extends Command {
-
     private $console;
-    public function __construct( $console ) {
-        $this->console = $console;
+
+    public function __construct( $parent ) {
+        $this->console = $parent;
         parent::__construct();
     }
 
     protected function configure() {
-        $name = 'get';
+        $name = basename( str_replace( '\\', '/', strtolower( __CLASS__ ) ) );
         $info = $this->console->info( $name );
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
@@ -36,15 +36,19 @@ class Get extends Command {
         $this->addOption( 'decrypt', 'd', InputOption::VALUE_OPTIONAL, $help->decrypt, '' );
         $this->addOption( 'meta', 'm', InputOption::VALUE_NONE, $help->meta );
         $this->addOption( 'raw', 'r', InputOption::VALUE_NONE, $help->raw );
+        $this->addOption( 'table-type', 't', InputOption::VALUE_OPTIONAL, $help->tabletype, 'vertical' );
         $this->addOption( 'save-to', 's', InputOption::VALUE_OPTIONAL, $help->saveto, '' );
     }
 
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
+        $this->console->io( $input, $output );
+
         $key = $input->getArgument( 'key' );
 
         $decrypt_key = $input->getOption( 'decrypt' );
         $saveto = $input->getOption( 'save-to' );
+        $tabletype = $input->getOption( 'table-type' );
 
         $is_decrypt = ( ! empty( $decrypt_key ) ? true : false );
         $is_saveto = ( ! empty( $saveto ) ? true : false );
@@ -52,66 +56,67 @@ class Get extends Command {
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
         $is_meta = ( ! empty( $input->getOption( 'meta' ) ) ? true : false );
 
-        set_error_handler( function() {}, E_WARNING | E_NOTICE );
+        $is_table_horizontal = ( ! empty( $tabletype ) && ( 'horizontal' === $tabletype || Func::start_with( $tabletype, 'h' ) ) ? true : false );
 
-        $console = $this->console;
         if ( Func::has_with( $key, '*' ) ) {
-            $key_r = $console->db->keys( $key );
+            $key_r = $this->console->db->keys( $key );
             if ( ! empty( $key_r ) ) {
                 $key = $key_r[0];
             }
         }
 
-        $db = $console->db;
+        $db = $this->console->db;
+        $chain_db = $db;
         if ( $is_decrypt ) {
-            $db = $db->decrypt( $decrypt_key );
+            $chain_db = $chain_db->decrypt( $decrypt_key );
         }
 
         if ( $is_saveto ) {
-            $db = $db->blob();
+            $chain_db = $chain_db->blob();
         }
 
         if ( $is_meta ) {
-            $db = $db->meta();
+            $chain_db = $chain_db->meta();
         }
 
-        $results = $db->get( $key );
+        $results = $chain_db->get( $key );
 
         $error = $db->last_error();
-        if ( !empty($error) ) {
-            $console->output_raw( $output, $error );
+        if ( ! empty( $error ) ) {
+            $this->console->output_raw( $error );
             return 1;
         }
 
-        if ( empty($results) ) {
-            $console->output_nil( $output );
+        if ( empty( $results ) ) {
+            $this->console->output_nil();
             return 1;
         }
 
-        if ( $is_saveto && ! ctype_print( $results ) ) {
+        if ( $is_saveto ) {
             if ( Func::is_file_writable( $saveto ) ) {
-                $helper = $this->getHelper( 'question' );
-                $question = new ConfirmationQuestion( "File '.$saveto.' already exists. Continue with this action? (Y/N): ", false );
 
-                if ( ! $helper->ask( $input, $output, $question ) ) {
-                    $console->output_nil( $output );
+                if ( ! $this->console->confirm( "File '.$saveto.' already exists. Continue with this action?", false ) ) {
                     return 1;
                 }
             }
 
+            if ( \is_array( $results ) ) {
+                $results = Func::export_var( $results );
+            }
+
             if ( '/' !== $saveto && '.' !== $saveto && ! is_dir( $saveto ) && file_put_contents( $saveto, $results ) ) {
-                $console->output_raw( $output, $saveto );
+                $this->console->output_raw( $saveto );
                 return 0;
             }
 
-            $console->output_nil( $output );
+            $this->console->output_nil();
             return 1;
         }
 
-        $results = Func::object_to_array( $results );
+        $results = Arr::convert_object( $results );
 
         if ( $is_raw ) {
-            $console->output_raw( $output, $results );
+            $this->console->output_raw( $results );
             return 0;
         }
 
@@ -120,15 +125,16 @@ class Get extends Command {
         $row2 = [];
 
         if ( ! \is_array( $results ) && ! \is_object( $results ) ) {
-            $header = [ 'Key', 'Value' ];
-            $size = Func::get_size( $results );
+            $header = [ 'Value' ];
             if ( \is_string( $results ) ) {
-                $results = Func::cutstr( $results, 50 );
+                $results = Func::cutstr( $results );
             }
-            $row[] = [ $key, $results ];
+            $row[] = [ $results ];
+
         } else {
+
             if ( \is_object( $results ) ) {
-                $results = Func::object_to_array( $results );
+                $results = Arr::convert_object( $results );
             }
 
             if ( $is_meta ) {
@@ -144,65 +150,89 @@ class Get extends Command {
                                 }
                                 foreach ( $arr as $a => $b ) {
                                     if ( \is_string( $b ) ) {
-                                        $arr[ $a ] = Func::cutstr( $b, 50 );
+                                        $arr[ $a ] = Func::cutstr( $b );
                                     }
                                     return $arr;
                                 }
                             },
                             $k
                         );
-                        $k = Func::cutstr( Func::export_var( $k ), 50 );
+                        $k = Func::cutstr( Func::export_var( $k ) );
                     } elseif ( \is_string( $k ) ) {
-                        $k = Func::cutstr( $k, 50 );
+                        $k = Func::cutstr( $k );
                     }
 
                     $r[ $n ] = $k;
                 }
 
                 $row[] = $r;
+
             } else {
 
-                if ( \count( $results, 1 ) === 1 ) {
-                    $results = each( $results );
-                    $header[] = ( 0 === $results[0] ? 'Value' : $results[0] );
-                    $row[] = [ $results[1] ];
+                if ( ! Arr::is_multi( $results ) ) {
+                    $header = array_keys( $results );
+                    $row[] = array_values( $results );
+
                 } else {
-                    $has_a = false;
-                    foreach ( $results as $k => $arr ) {
-                        if ( \is_array( $arr ) ) {
-                            if ( empty( $header ) ) {
-                                $header = array_keys( $arr );
-                                if ( !empty($header) ) {
-                                    $has_a = true;
+                    $h = [];
+                    foreach ( $results as $n => $v ) {
+                        $h = array_merge( $h, array_keys( $v ) );
+                    }
+                    $h = array_unique( $h );
+
+                    $dosort = false;
+                    foreach ( $results as $n => $v ) {
+                        if ( \is_array( $v ) ) {
+                            foreach ( $h as $a ) {
+                                if ( ! isset( $v[ $a ] ) ) {
+                                    $results[ $n ][ $a ] = '';
+                                    $dosort = true;
                                 }
                             }
-                            $row2 = array_values( $arr );
+                        }
+                    }
+
+                    if ( $dosort ) {
+                        foreach ( $results as $n => $v ) {
+                            ksort( $results[ $n ] );
+                        }
+                    }
+
+                    foreach ( $results as $n => $v ) {
+                        if ( \is_array( $v ) ) {
+                            $row2 = array_values( $v );
                             foreach ( $row2 as $a => $b ) {
                                 if ( \is_array( $b ) ) {
-                                    $b = Func::export_var( $b );
+                                    if ( ! Arr::is_numeric( $b ) ) {
+                                        $tn = '';
+                                        foreach ( $b as $bk => $bv ) {
+                                            if ( \is_array( $bv ) ) {
+                                                $bv = Func::cutstr( Func::export_var( $bv ) );
+                                            }
+                                            $tn .= '<comment>'.ucwords( $bk )."</comment>\n$bv\n\n";
+                                        }
+                                        $b = trim( $tn )."\n";
+                                    } else {
+                                        $b = Func::cutstr( Func::export_var( $b ) );
+                                    }
                                 }
                                 $row2[ $a ] = $b;
                             }
                             $row[] = $row2;
-                        } else {
-                            if ( $has_a ) {
-                                $p[$arr] = $arr;
-                                $header = array_merge($header, $p);
-                            }
-                            if ( empty( $header ) ) {
-                                $header = array_keys( $results );
-                            }
-                            if ( empty( $row2 ) ) {
-                                $row2 = array_values( $results );
-                                $row[] = $row2;
-                            }
                         }
                     }
+
+                    $header = $h;
                 }
             }
         }
 
-        $console->output_table( $output, $header, $row );
+        if ( empty( $row ) ) {
+            $this->console->output_nil();
+            return 1;
+        }
+
+        $this->console->output_table( $header, $row, $is_table_horizontal );
         return 0;
     }
 }

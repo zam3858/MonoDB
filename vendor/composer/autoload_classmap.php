@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'JsonException' => $vendorDir . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
+    'Monodb\\Arrays' => $baseDir . '/src/Arrays.php',
     'Monodb\\Command\\Decr' => $baseDir . '/src/Command/Decr.php',
     'Monodb\\Command\\Del' => $baseDir . '/src/Command/Del.php',
     'Monodb\\Command\\Exists' => $baseDir . '/src/Command/Exists.php',

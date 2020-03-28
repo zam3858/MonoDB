@@ -11,6 +11,7 @@ namespace Monodb\Command;
 
 use Monodb\Monodb;
 use Monodb\Functions as Func;
+use Monodb\Arrays as Arr;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,15 +19,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Info extends Command {
-
     private $console;
-    public function __construct( $console ) {
-        $this->console = $console;
+
+    public function __construct( $parent ) {
+        $this->console = $parent;
         parent::__construct();
     }
 
     protected function configure() {
-        $name = 'info';
+        $name = basename( str_replace( '\\', '/', strtolower( __CLASS__ ) ) );
         $info = $this->console->info( $name );
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
@@ -36,6 +37,8 @@ class Info extends Command {
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
+        $this->console->io( $input, $output );
+
         $section = $input->getArgument( 'section' );
         if ( empty( $section ) ) {
             $section = '';
@@ -44,20 +47,35 @@ class Info extends Command {
         $section = strtolower( $section );
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
 
-        $results = $this->console->db->info( $section );
+        $db = $this->console->db;
+        $results = $db->info( $section );
 
-        if ( false === $results ) {
-            $this->console->output_raw( $output, $this->console->db->last_error() );
+        $error = $db->last_error();
+        if ( ! empty( $error ) ) {
+            $this->console->output_raw( $error );
+            return 1;
+        }
+
+        if ( empty( $results ) ) {
+            $this->console->output_nil();
             return 1;
         }
 
         if ( $is_raw ) {
-            $this->console->output_raw( $output, $results );
+            if ( Func::has_with( $section, 'config' ) ) {
+                $line = '';
+                foreach ( $results as $k => $v ) {
+                    $line .= $k.'='.$v."\n";
+                }
+                $results = trim( $line );
+            }
+            $this->console->output_raw( $results );
             return 0;
         }
 
         $header = [];
         $row = [];
+        $row2 = [];
 
         if ( ! \is_array( $results ) ) {
             $section = ucfirst( $section );
@@ -65,8 +83,8 @@ class Info extends Command {
             $row[] = [ $results ];
         } else {
             $header = array_keys( $results );
-
             $row2 = array_values( $results );
+            $r = [];
             foreach ( $row2 as $n => $k ) {
                 if ( \is_array( $k ) ) {
                     $k = array_map(
@@ -76,16 +94,27 @@ class Info extends Command {
                             }
                             foreach ( $arr as $a => $b ) {
                                 if ( \is_string( $b ) ) {
-                                    $arr[ $a ] = Func::cutstr( $b, 50 );
+                                    $arr[ $a ] = Func::cutstr( $b );
                                 }
-                                return $arr;
                             }
+                            return $arr;
                         },
                         $k
                     );
-                    $k = Func::export_var( $k );
+                    if ( ! Arr::is_numeric( $k ) ) {
+                        $tn = '';
+                        foreach ( $k as $bk => $bv ) {
+                            if ( \is_array( $bv ) ) {
+                                $bv = Func::export_var( $bv );
+                            }
+                            $tn .= '<comment>'.ucwords( $bk )."</comment>\n$bv\n\n";
+                        }
+                        $k = trim( $tn )."\n";
+                    } else {
+                        $k = Func::export_var( $k );
+                    }
                 } elseif ( \is_string( $k ) ) {
-                    $k = Func::cutstr( $k, 50 );
+                    $k = Func::cutstr( $k );
                 }
 
                 $r[ $n ] = $k;
@@ -94,7 +123,7 @@ class Info extends Command {
             $row[] = $r;
         }
 
-        $this->console->output_table( $output, $header, $row );
+        $this->console->output_table( $header, $row );
 
         return 0;
     }

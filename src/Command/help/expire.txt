@@ -13,8 +13,4 @@ Use '--raw' option if want to output raw data. The raw data either a single stri
 <info>
 %command.full_name% expire run 10 --raw
 </info>
-Use '--meta' option if want to output internal data schema.
-<info>
-%command.full_name% expire run 10 --meta
-</info>
 

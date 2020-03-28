@@ -18,15 +18,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Keys extends Command {
-
     private $console;
-    public function __construct( $console ) {
-        $this->console = $console;
+
+    public function __construct( $parent ) {
+        $this->console = $parent;
         parent::__construct();
     }
 
     protected function configure() {
-        $name = 'keys';
+        $name = basename( str_replace( '\\', '/', strtolower( __CLASS__ ) ) );
         $info = $this->console->info( $name );
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
@@ -37,6 +37,8 @@ class Keys extends Command {
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
+        $this->console->io( $input, $output );
+
         $key = $input->getArgument( 'key' );
         if ( empty( $key ) ) {
             $key = '';
@@ -45,28 +47,32 @@ class Keys extends Command {
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
         $is_meta = ( ! empty( $input->getOption( 'meta' ) ) ? true : false );
 
-        $console = $this->console;
-        $results = ( $is_meta ? $console->db->meta()->keys( $key ) : $console->db->keys( $key ) );
+        $db = $this->console->db;
+        $chain_db = $db;
 
-        set_error_handler( function() {}, E_WARNING | E_NOTICE );
+        if ( $is_meta ) {
+            $chain_db = $chain_db->meta();
+        }
 
-        $error = $console->db->last_error();
-        if ( !empty($error) ) {
-            $console->output_raw( $output, $error );
+        $results = $chain_db->keys( $key );
+
+        $error = $db->last_error();
+        if ( ! empty( $error ) ) {
+            $this->console->output_raw( $error );
             return 1;
         }
 
-        if ( empty($results) ) {
-            $console->output_nil( $output );
+        if ( empty( $results ) ) {
+            $this->console->output_nil();
             return 1;
         }
 
         if ( $is_raw ) {
             if ( $is_meta ) {
-                $this->console->output_raw( $output, array_values( $results ) );
+                $this->console->output_raw( array_values( $results ) );
             } else {
                 foreach ( array_values( $results ) as $k ) {
-                    $this->console->output_raw( $output, $k );
+                    $this->console->output_raw( $k );
                 }
             }
             return 0;
@@ -90,7 +96,7 @@ class Keys extends Command {
             }
         }
 
-        $this->console->output_table( $output, $header, $row );
+        $this->console->output_table( $header, $row );
         return 0;
     }
 }

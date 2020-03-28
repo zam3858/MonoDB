@@ -18,15 +18,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Exists extends Command {
-
     private $console;
-    public function __construct( $console ) {
-        $this->console = $console;
+
+    public function __construct( $parent ) {
+        $this->console = $parent;
         parent::__construct();
     }
 
     protected function configure() {
-        $name = 'exists';
+        $name = basename( str_replace( '\\', '/', strtolower( __CLASS__ ) ) );
         $info = $this->console->info( $name );
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
@@ -36,22 +36,31 @@ class Exists extends Command {
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
+        $this->console->io( $input, $output );
+
         $key = $input->getArgument( 'key' );
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
 
-        $console = $this->console;
-        $results = $console->db->keys( $key );
-        $cnt = ( empty($results) ? 0 : 1 );
+        $db = $this->console->db;
+        $results = $db->keys( $key );
+
+        $error = $db->last_error();
+        if ( ! empty( $error ) ) {
+            $this->console->output_raw( $error );
+            return 1;
+        }
+
+        $cnt = ( empty( $results ) ? 0 : 1 );
 
         if ( $is_raw ) {
-            $output->writeln( $cnt );
+            $this->console->output_raw( $cnt );
             return 0;
         }
 
         $header = [ 'Exists' ];
         $row[] = [ $cnt ];
 
-        $console->output_table( $output, $header, $row );
+        $this->console->output_table( $header, $row );
         return 0;
     }
 }

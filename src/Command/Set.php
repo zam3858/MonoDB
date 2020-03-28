@@ -11,6 +11,7 @@ namespace Monodb\Command;
 
 use Monodb\Monodb;
 use Monodb\Functions as Func;
+use Monodb\Arrays as A;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,15 +19,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Set extends Command {
-
     private $console;
-    public function __construct( $console ) {
-        $this->console = $console;
+
+    public function __construct( $parent ) {
+        $this->console = $parent;
         parent::__construct();
     }
 
     protected function configure() {
-        $name = 'set';
+        $name = basename( str_replace( '\\', '/', strtolower( __CLASS__ ) ) );
         $info = $this->console->info( $name );
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
@@ -40,6 +41,8 @@ class Set extends Command {
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
+        $this->console->io( $input, $output );
+
         $key = $input->getArgument( 'key' );
         $value = $input->getArgument( 'value' );
 
@@ -50,21 +53,21 @@ class Set extends Command {
         $is_asarray = ( ! empty( $input->getOption( 'as-array' ) ) ? true : false );
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
 
-        set_error_handler( function() {}, E_WARNING | E_NOTICE );
-
         if ( $is_asarray ) {
             $arr = [];
             $x = 0;
             foreach ( $value as $n => $v ) {
                 if ( preg_match( '@([^=]+)=([^=]+)@', $v, $mm ) ) {
-                    if ( isset($arr[$x][ $mm[1] ]) ) {
+                    if ( isset( $arr[ $x ][ $mm[1] ] ) ) {
                         $x++;
                     }
-                    $arr[$x][ $mm[1] ] = $mm[2];
+                    $arr[ $x ][ $mm[1] ] = $mm[2];
                 } else {
-                    $arr[ $n ] = $v;
+                    $arr[ $x ][ $v ] = $v;
                 }
             }
+
+            rsort( $arr );
             $value = $arr;
 
         } else {
@@ -73,29 +76,35 @@ class Set extends Command {
             $value = trim( $text );
         }
 
-        $console = $this->console;
-        $db = $console->db;
+        $db = $this->console->db;
+        $chain_db = $db;
 
         if ( $is_encrypt ) {
-            $db = $db->encrypt( $encrypt_key );
+            $chain_db = $chain_db->encrypt( $encrypt_key );
         }
 
-        $results = $db->set( $key, $value, $expire );
+        $results = $chain_db->set( $key, $value, $expire );
 
-        if ( false === $results ) {
-            $console->output_raw( $output, $console->db->last_error() );
+        $error = $db->last_error();
+        if ( ! empty( $error ) ) {
+            $this->console->output_raw( $error );
+            return 1;
+        }
+
+        if ( empty( $results ) ) {
+            $this->console->output_nil();
             return 1;
         }
 
         if ( $is_raw ) {
-            $console->output_raw( $output, $results );
+            $this->console->output_raw( $results );
             return 0;
         }
 
         $header = [ 'Key' ];
         $row[] = [ $results ];
 
-        $console->output_table( $output, $header, $row );
+        $this->console->output_table( $header, $row );
         return 0;
     }
 }

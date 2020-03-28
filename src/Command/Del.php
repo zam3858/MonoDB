@@ -18,15 +18,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Del extends Command {
-
     private $console;
-    public function __construct( $console ) {
-        $this->console = $console;
+
+    public function __construct( $parent ) {
+        $this->console = $parent;
         parent::__construct();
     }
 
     protected function configure() {
-        $name = 'del';
+        $name = basename( str_replace( '\\', '/', strtolower( __CLASS__ ) ) );
         $info = $this->console->info( $name );
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
@@ -36,39 +36,42 @@ class Del extends Command {
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
+        $this->console->io( $input, $output );
+
         $keys = $input->getArgument( 'key' );
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
 
-        $console = $this->console;
-
+        $db = $this->console->db;
         $cnt = 0;
+
         foreach ( $keys as $n => $key ) {
             if ( Func::has_with( $key, '*' ) ) {
-                $key_r = $console->db->keys( $key );
+                $key_r = $db->keys( $key );
                 if ( ! empty( $key_r ) ) {
                     $key = $key_r[0];
                 }
             }
 
-            if ( false !== $console->db->delete( $key ) ) {
+            if ( false !== $db->delete( $key ) ) {
                 $cnt++;
             }
         }
 
-        if ( 0 === $cnt ) {
-            $console->output_raw( $output, $console->db->last_error() );
+        $error = $db->last_error();
+        if ( ! empty( $error ) ) {
+            $this->console->output_raw( $error );
             return 1;
         }
 
         if ( $is_raw ) {
-            $console->output_raw( $output, $cnt );
+            $this->console->output_raw( $cnt );
             return 0;
         }
 
         $header = [ 'Removed' ];
         $row[] = [ $cnt ];
 
-        $console->output_table( $output, $header, $row );
+        $this->console->output_table( $header, $row );
         return 0;
     }
 }

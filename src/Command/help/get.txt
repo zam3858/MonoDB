@@ -18,7 +18,7 @@ Use '--decrypt' option if want to decrypt the string value.
 <info>
 %command.full_name% name --decrypt=secret
 </info>
-Use '--save-to' option if want to output binary data to file.
+Use '--save-to' option if want to output data to file.
 <info>
 %command.full_name% image --save-to=image.jpg
 </info>

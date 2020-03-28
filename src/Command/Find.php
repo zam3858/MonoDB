@@ -11,6 +11,7 @@ namespace Monodb\Command;
 
 use Monodb\Monodb;
 use Monodb\Functions as Func;
+use Monodb\Arrays as Arr;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,15 +19,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class Find extends Command {
-
     private $console;
-    public function __construct( $console ) {
-        $this->console = $console;
+
+    public function __construct( $parent ) {
+        $this->console = $parent;
         parent::__construct();
     }
 
     protected function configure() {
-        $name = 'find';
+        $name = basename( str_replace( '\\', '/', strtolower( __CLASS__ ) ) );
         $info = $this->console->info( $name );
         $this->setName( $name )->setDescription( $info->desc )->setHelp( $info->help );
 
@@ -34,15 +35,18 @@ class Find extends Command {
         $this->addArgument( 'key', InputArgument::REQUIRED, $help->key );
         $this->addArgument( 'value', InputArgument::IS_ARRAY | InputArgument::REQUIRED, $help->value );
         $this->addOption( 'raw', 'r', InputOption::VALUE_NONE, $help->raw );
+        $this->addOption( 'table-type', 't', InputOption::VALUE_OPTIONAL, $help->tabletype, 'vertical' );
     }
 
     protected function execute( InputInterface $input, OutputInterface $output ) {
+        $this->console->io( $input, $output );
+
         $key = $input->getArgument( 'key' );
         $value = $input->getArgument( 'value' );
+        $tabletype = $input->getOption( 'table-type' );
 
         $is_raw = ( ! empty( $input->getOption( 'raw' ) ) ? true : false );
-
-        set_error_handler( function() {}, E_WARNING | E_NOTICE );
+        $is_table_horizontal = ( ! empty( $tabletype ) && ( 'horizontal' === $tabletype || Func::start_with( $tabletype, 'h' ) ) ? true : false );
 
         $arr = [];
         foreach ( $value as $n => $v ) {
@@ -54,8 +58,8 @@ class Find extends Command {
         }
         $value = $arr;
 
-        $console = $this->console;
-        $db = $console->db;
+        $this->console = $this->console;
+        $db = $this->console->db;
 
         if ( \is_array( $value ) ) {
             $aa = [];
@@ -73,19 +77,19 @@ class Find extends Command {
             $results = $results[0];
         }
 
-        $error = $console->db->last_error();
+        $error = $db->last_error();
         if ( ! empty( $error ) ) {
-            $console->output_raw( $output, $console->db->last_error() );
+            $this->console->output_raw( $error );
             return 1;
         }
 
         if ( empty( $results ) ) {
-            $console->output_nil( $output );
+            $this->console->output_nil();
             return 1;
         }
 
         if ( $is_raw ) {
-            $console->output_raw( $output, $results );
+            $this->console->output_raw( $results );
             return 0;
         }
 
@@ -95,7 +99,7 @@ class Find extends Command {
 
         if ( \is_array( $results ) ) {
 
-            if ( ! empty( $results[0] ) ) {
+            if ( Arr::is_numeric( $results ) ) {
                 if ( \count( $results ) === 1 ) {
                     $results = each( $results );
                     $header[] = ( 0 === $results[0] ? 'Match' : $results[0] );
@@ -109,7 +113,29 @@ class Find extends Command {
                             $row2 = array_values( $arr );
                             foreach ( $row2 as $a => $b ) {
                                 if ( \is_array( $b ) ) {
-                                    $b = Func::export_var( $b );
+                                    if ( ! Arr::is_numeric( $b ) ) {
+                                        $tn = '';
+                                        foreach ( $b as $bk => $bv ) {
+                                            if ( \is_array( $bv ) ) {
+                                                if ( ! Arr::is_numeric( $bv ) ) {
+                                                    $tmn = '';
+                                                    foreach ( $bv as $bvk => $bvv ) {
+                                                        $tmn .= '<fg=cyan>'.ucwords( $bvk )."</>\n$bvv\n\n";
+                                                    }
+                                                    $bv = $tmn;
+                                                } else {
+                                                    $bv = Func::cutstr( Func::export_var( $bv ) );
+                                                }
+                                            }
+                                            $tn .= '<comment>'.ucwords( $bk )."</comment>\n$bv\n\n";
+                                        }
+                                        $b = trim( $tn )."\n";
+                                    } elseif ( ! Arr::is_multi( $b ) ) {
+                                        $b = implode( "\n", $b );
+                                        $b = trim( $b );
+                                    } else {
+                                        $b = Func::cutstr( Func::export_var( $b ) );
+                                    }
                                 }
                                 $row2[ $a ] = $b;
                             }
@@ -131,23 +157,31 @@ class Find extends Command {
                 $r = [];
                 foreach ( $row2 as $n => $k ) {
                     if ( \is_array( $k ) ) {
-                        $k = array_map(
-                            function ( $arr ) {
-                                if ( ! \is_array( $arr ) ) {
-                                    return $arr;
-                                }
-                                foreach ( $arr as $a => $b ) {
-                                    if ( \is_string( $b ) ) {
-                                        $arr[ $a ] = Func::cutstr( $b, 50 );
+                        if ( ! Arr::is_numeric( $k ) ) {
+                            $tn = '';
+                            foreach ( $k as $bk => $bv ) {
+                                if ( \is_array( $bv ) ) {
+                                    if ( ! Arr::is_numeric( $bv ) ) {
+                                        $tmn = '';
+                                        foreach ( $bv as $bvk => $bvv ) {
+                                            $tmn .= '<fg=cyan>'.ucwords( $bvk )."</>\n$bvv\n\n";
+                                        }
+                                        $bv = $tmn;
+                                    } else {
+                                        $bv = Func::cutstr( Func::export_var( $bv ) );
                                     }
-                                    return $arr;
                                 }
-                            },
-                            $k
-                        );
-                        $k = Func::cutstr( Func::export_var( $k ), 50 );
+                                $tn .= '<comment>'.ucwords( $bk )."</comment>\n$bv\n\n";
+                            }
+                            $k = trim( $tn )."\n";
+                        } elseif ( ! Arr::is_multi( $k ) ) {
+                            $k = implode( "\n", $k );
+                            $k = trim( $k );
+                        } else {
+                            $k = Func::cutstr( Func::export_var( $k ) );
+                        }
                     } elseif ( \is_string( $k ) ) {
-                        $k = Func::cutstr( $k, 50 );
+                        $k = Func::cutstr( $k );
                     }
 
                     $r[ $n ] = $k;
@@ -160,7 +194,7 @@ class Find extends Command {
             $row[] = [ $results ];
         }
 
-        $this->console->output_table( $output, $header, $row );
+        $this->console->output_table( $header, $row, $is_table_horizontal );
         return 0;
     }
 }

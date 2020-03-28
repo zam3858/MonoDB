@@ -12,8 +12,6 @@ namespace Monodb;
 
 use Monodb\Monodb;
 use Monodb\Functions as Func;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Helper\Table;
 use Monodb\Command\Set;
 use Monodb\Command\Get;
 use Monodb\Command\Keys;
@@ -25,14 +23,27 @@ use Monodb\Command\Info;
 use Monodb\Command\Exists;
 use Monodb\Command\Find;
 use Monodb\Command\Expire;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Helper\Table;
 
 class Console {
     public $options = [];
     public $db = null;
+    private $input = null;
+    private $output = null;
 
     public function __construct( $options = [] ) {
         $this->options = $options;
         $this->db = $this->db( $options );
+    }
+
+    public function __destruct() {
+        return true;
+    }
+
+    public function io( $input, $output ) {
+        $this->input = $input;
+        $this->output = $output;
     }
 
     public function db( $options = [] ) {
@@ -43,46 +54,59 @@ class Console {
         return $inst;
     }
 
-    public function output_nil( $output ) {
-        self::output_raw( $output, 'nil' );
+    public function confirm( string $text, bool $answer = false ) {
+        $io = new SymfonyStyle( $this->input, $this->output );
+        return $io->confirm( $text, $answer );
     }
 
-    public function output_raw( $output, $data ) {
-        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) || 0 === (int)$data ? $data : 'nil' ) );
-        $output->writeln( $data );
+    public function output_nil() {
+        $this->output_raw( 'nil' );
     }
 
-    public static function output_table( $output, $header, $row ) {
-        $header = array_map( 'ucwords', $header );
+    public function output_raw( $data ) {
+        $data = ( ! empty( $data ) && \is_array( $data ) ? Func::export_var( $data ) : ( ! empty( $data ) || 0 === (int) $data ? $data : 'nil' ) );
+        $this->output->writeln( $data );
+    }
 
-        $table = new Table( $output );
+    public function output_table( array $header, array $row, bool $horizontal = false ) {
+        $header = array_map( 'strtoupper', $header );
+
+        $table = new Table( $this->output );
         $table->setHeaders( $header );
         $table->setRows( $row );
+
+        if ( $horizontal ) {
+            $table->setHorizontal();
+        }
+
         $table->render();
     }
 
-    private function get_help_text( $name ) {
+    private function get_help_text( string $name, bool $asis = false ) {
         $file = __DIR__.'/Command/help/'.$name.'.txt';
+        $data = '';
         if ( Func::is_file_readable( $file ) ) {
             $data = file_get_contents( $file );
-            $data = trim( $data );
-            if ( ! empty( $data ) ) {
-                if ( !empty($_SERVER['argv']) && in_array('--format=md', $_SERVER['argv']) ) {
-                    $data = str_replace('Return value', '### Return value', $data);
-                    $data = str_replace('Examples', '### Examples', $data);
-                    $data = str_replace('Supported wildcard patterns', '### Supported wildcard patterns', $data);
-                    $data = str_replace('Use \'--', '- Use \'--', $data);
+            if ( ! $asis ) {
+                $data = trim( $data );
+                if ( ! empty( $data ) ) {
+                    if ( ! empty( $_SERVER['argv'] ) && \in_array( '--format=md', $_SERVER['argv'], true ) ) {
+                        $data = str_replace( 'Return value', '### Return value', $data );
+                        $data = str_replace( 'Examples', '### Examples', $data );
+                        $data = str_replace( 'Supported wildcard patterns', '### Supported wildcard patterns', $data );
+                        $data = str_replace( 'Use \'--', '- Use \'--', $data );
+                    }
+                    if ( Func::end_with( $data, '</info>' ) ) {
+                        return $data;
+                    }
+                    return $data.PHP_EOL;
                 }
-                if ( Func::end_with( $data, '</info>' ) ) {
-                    return $data;
-                }
-                return $data.PHP_EOL;
             }
         }
-        return '';
+        return $data;
     }
 
-    public function info( $name ) {
+    public function info( string $name ) {
         $data = [];
 
         $data['keys'] = [
@@ -151,22 +175,18 @@ class Console {
             'asarray' => 'Set a value as Array string',
             'encrypt' => 'Encrypt string value',
             'decrypt' => 'Decrypt string value',
-            'saveto' => 'Save binary data to file',
+            'saveto' => 'Output data to file',
             'incrnumber' => 'Increment number',
-            'decrnumber' => 'Decrement number'
+            'decrnumber' => 'Decrement number',
+            'tabletype' => 'Display as table type'
         ];
 
         return ( isset( $data[ $name ] ) ? (object) $data[ $name ] : '' );
     }
 
     public function run() {
-        $ascii = "";
-        $ascii .= "  __  __                   ____  ____  \n";
-        $ascii .= " |  \/  | ___  _ __   ___ |  _ \| __ ) \n";
-        $ascii .= " | |\/| |/ _ \| '_ \ / _ \| | | |  _ \ \n";
-        $ascii .= " | |  | | (_) | | | | (_) | |_| | |_) |\n";
-        $ascii .= " |_|  |_|\___/|_| |_|\___/|____/|____/ \n\n";
-        $app = new Application( $ascii.'<info>'.$this->db->name().'</info> version <comment>'.$this->db->version().'</comment>' );
+        $banner = $this->get_help_text( 'banner', true );
+        $app = new Application( $banner.'<info>'.$this->db->name().'</info> version <comment>'.$this->db->version().'</comment>' );
         $app->setCatchExceptions( true );
         $app->add( new Set( $this ) );
         $app->add( new Get( $this ) );

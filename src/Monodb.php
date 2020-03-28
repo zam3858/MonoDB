@@ -11,6 +11,7 @@
 namespace Monodb;
 
 use Monodb\Functions as Func;
+use Monodb\Arrays as Arr;
 
 class Monodb {
 
@@ -157,48 +158,6 @@ class Monodb {
         $code = '<?php'.PHP_EOL;
         $code .= 'return '.Func::export_var( $data ).';'.PHP_EOL;
         return $code;
-    }
-
-    /**
-     * Searches the array for a given value and returns the first corresponding array/string if successful.
-     *
-     * @access private
-     * @param array $array_data Array data to search
-     * @param array|string $find_value Array value to find
-     * @param array|string $find_key (Optional) Array key to find
-     * @return array|string|false Returns array or string if found, false otherwise
-     */
-    private function array_search_index( $array_data, $find_value, $find_key = '' ) {
-        if ( \is_array( $array_data ) ) {
-            foreach ( $array_data as $arr_key => $arr_value ) {
-                $current_key = $arr_key;
-
-                if ( ( \is_string( $arr_value ) && Func::match_wildcard( $arr_value, $find_value ) )
-                    || ( \is_array( $arr_value ) && $this->array_search_index( $arr_value, $find_value, $find_key ) !== false ) ) {
-
-                    // found value
-                    $found = $array_data[ $current_key ];
-
-                    if ( \is_array( $found ) && ! empty( $find_key ) ) {
-                        $kv = print_r( $found, 1 );
-
-                        if ( preg_match_all( '@(\s*?Array\n*\(\n+)?\s*\[(.*?)\]\s*=\>\s*@m', $kv, $mm ) ) {
-                            $keys = $mm[2];
-                            foreach ( $keys as $k ) {
-                                if ( Func::match_wildcard( $k, $find_key ) ) {
-                                    return $found;
-                                }
-                            }
-                        }
-                        // null to skip
-                        return null;
-                    }
-
-                    return ( \is_array( $found ) ? $found : [ $current_key => $found ] );
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -469,7 +428,7 @@ class Monodb {
 
         if ( Func::is_file_readable( $file ) ) {
             $meta = $this->data_read( $file );
-            if ( ! \is_array( $meta ) || empty( $meta ) || ( empty( $meta['value'] ) && 0 !== (int)$meta['value']) ) {
+            if ( ! \is_array( $meta ) || empty( $meta ) || ( empty( $meta['value'] ) && 0 !== (int) $meta['value'] ) ) {
                 $this->delete( $key );
                 $debug[] = 'Delete Invalid data';
                 return false;
@@ -479,14 +438,14 @@ class Monodb {
                 if ( time() >= (int) $meta['expiry'] ) {
                     $this->delete( $key );
                     $debug = [
-                            'status' => 'expired',
-                            'Key' => $key,
-                            'Expiry' => gmdate(
-                                'Y-m-d H:i:s',
-                                $meta['expiry']
-                            )
-                        ];
-                    $this->catch_debug(__METHOD__, $debug);
+                        'status' => 'expired',
+                        'Key' => $key,
+                        'Expiry' => gmdate(
+                            'Y-m-d H:i:s',
+                            $meta['expiry']
+                        )
+                    ];
+                    $this->catch_debug( __METHOD__, $debug );
                     return false;
                 }
             }
@@ -619,19 +578,20 @@ class Monodb {
                 if ( 'json' === $type && Func::is_var_json( $data ) ) {
                     $data = json_decode( $data, true );
                 } else {
-                    $data = Func::object_to_array( $data );
+                    $data = Arr::convert_object( $data );
                 }
                 if ( \is_array( $match ) ) {
-                    $found = $this->array_search_index( $data, $match[1], $match[0] );
+                    $found = Arr::search( $data, $match[1], $match[0] );
                     return ( ! empty( $found ) ? $found : false );
                 }
 
                 // single
-                $found = $this->array_search_index( $data, $match );
+                $found = Arr::search( $data, $match );
                 return ( ! empty( $found ) ? $found : false );
             }
 
-            if ( Func::match_wildcard( $data, $match ) ) {
+            // not array
+            if ( is_string( $match ) && Func::match_wildcard( $data, $match ) ) {
                 return $data;
             }
         }
@@ -667,6 +627,13 @@ class Monodb {
             return $this->find_all( $match );
         }
         return $this->find_data( $key, $match );
+    }
+
+    public function find_array_key( string $key, $array_key ) {
+        if ( '*' === $key ) {
+            return $this->find_all( [ $array_key, '*' ] );
+        }
+        return $this->find_data( $key, [ $array_key, '*' ] );
     }
 
     /**
@@ -758,7 +725,7 @@ class Monodb {
         $num = ( ! empty( $num ) ? $num : 1 );
         if ( $this->exists( $key ) ) {
             $data = $this->get( $key );
-            if ( ! empty( $data ) && 0 !== (int)$data && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
+            if ( ! empty( $data ) && 0 !== (int) $data && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
                 if ( $num > PHP_INT_MAX ) {
                     return 1;
                 }
@@ -804,7 +771,7 @@ class Monodb {
                 }
             }
         }
-        
+
         if ( false !== $this->set( $key, 0 ) ) {
             return 0;
         }
@@ -822,9 +789,12 @@ class Monodb {
             if ( ! empty( $expiry ) && Func::is_var_num( $expiry ) ) {
                 $expiry = (int) $expiry;
                 if ( $expiry > 0 ) {
-                    $data['expiry'] = ( time()+$expiry );
+                    $data['expiry'] = ( time() + $expiry );
                     if ( false !== $this->data_update( $key, $data ) ) {
-                        return ['key' => $key, 'expiry' => gmdate('Y-m-d H:i:s', $data['expiry']).' UTC' ];
+                        return [
+                            'key' => $key,
+                            'expiry' => gmdate( 'Y-m-d H:i:s', $data['expiry'] ).' UTC'
+                        ];
                     }
                 }
             }
@@ -832,7 +802,10 @@ class Monodb {
             // reset
             $data['expiry'] = 0;
             if ( false !== $this->data_update( $key, $data ) ) {
-                return ['key' => $key, 'expiry' => $data['expiry'] ];
+                return [
+                    'key' => $key,
+                    'expiry' => $data['expiry']
+                ];
             }
         }
 

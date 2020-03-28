@@ -7,7 +7,7 @@ class ApiTest extends TestCase {
         $this->config = [
             'dbname' => 'phpunit'
         ];
-        $db = new Monodb\Monodb($this->config);
+        $db = new Monodb\Monodb( $this->config );
         return $db;
     }
 
@@ -30,31 +30,31 @@ class ApiTest extends TestCase {
     }
 
     public function testFind() {
-        $input = $this->db()->find('greeting', 'hello world!');
+        $input = $this->db()->find( 'greeting', 'hello world!' );
         $results = 'hello world!';
         $this->assertEquals( $input, $results );
     }
 
     public function testIncr1() {
-        $input = $this->db()->incr('incr');
+        $input = $this->db()->incr( 'incr' );
         $results = 1;
         $this->assertEquals( $input, $results );
     }
 
     public function testIncr2() {
-        $input = $this->db()->incr('incr', 10);
+        $input = $this->db()->incr( 'incr', 10 );
         $results = 11;
         $this->assertEquals( $input, $results );
     }
 
     public function testDecr1() {
-        $input = $this->db()->decr('incr');
+        $input = $this->db()->decr( 'incr' );
         $results = 10;
         $this->assertEquals( $input, $results );
     }
 
     public function testDecr2() {
-        $input = $this->db()->decr('incr', 10);
+        $input = $this->db()->decr( 'incr', 10 );
         $results = 0;
         $this->assertEquals( $input, $results );
     }
@@ -68,8 +68,8 @@ class ApiTest extends TestCase {
 
     public function testDelete() {
         $key = 'key1';
-        $this->db()->set($key,1);
-        $input = $this->db()->delete($key);
+        $this->db()->set( $key, 1 );
+        $input = $this->db()->delete( $key );
         $results = $key;
         $this->assertEquals( $input, $results );
     }
@@ -81,22 +81,22 @@ class ApiTest extends TestCase {
             'key3'
         ];
 
-        foreach($keys as $key) {
-            $this->db()->set($key,1);
+        foreach ( $keys as $key ) {
+            $this->db()->set( $key, 1 );
         }
-        $input = $this->db()->mdelete($keys[0],$keys[1],$keys[2]);
+        $input = $this->db()->mdelete( $keys[0], $keys[1], $keys[2] );
         $results = $keys;
         $this->assertEquals( $input, $results );
     }
 
     public function testSetExpire() {
         $timeout = 1;
-        $this->db()->set('key',1, $timeout );
-        sleep(2);
+        $this->db()->set( 'key', 1, $timeout );
+        sleep( 2 );
         $input = false;
         $results = true;
-        $this->db()->get('key', $debug);
-        if ( !empty($debug) && \is_array($debug) && 'expired' === $debug['status'] ) {
+        $this->db()->get( 'key', $debug );
+        if ( ! empty( $debug ) && \is_array( $debug ) && 'expired' === $debug['status'] ) {
             $results = false;
         }
         $this->assertEquals( false, $results );

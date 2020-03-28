@@ -11,6 +11,7 @@
 namespace Monodb;
 
 use Monodb\Functions as Func;
+use Monodb\Arrays as Arr;
 
 class Config {
     public $dir = '';
@@ -28,8 +29,14 @@ class Config {
         $this->dbdir = $this->dir.$this->dbname.'/';
 
         $config = $this->read_file_config();
-        if ( !empty($config) && is_array($config) ) {
-            $options = array_merge($options, $config);
+        if ( ! empty( $config ) && is_array( $config ) ) {
+            $config = Arr::keys_walk(
+                $config,
+                function( $key, $value ) {
+                    return strtolower( $key );
+                }
+            );
+            $options = array_merge( $options, $config );
         }
 
         $options = $this->set_options( $options );
@@ -87,48 +94,49 @@ class Config {
 
     protected function read_file_config() {
         $config = [];
-        if ( 'cli' === php_sapi_name() && !empty($_SERVER['HOME']) ) {
-            $config = $this->parse_config($_SERVER['HOME'].'/.monodb.env');
-            if ( !empty($config) && is_array($config) ) {
+        if ( 'cli' === php_sapi_name() && ! empty( $_SERVER['HOME'] ) ) {
+            $config = $this->parse_config( $_SERVER['HOME'].'/.monodb.env' );
+            if ( ! empty( $config ) && is_array( $config ) ) {
                 return $config;
             }
-        } elseif ( !empty($_SERVER['DOCUMENT_ROOT']) ) {
-            $config = $this->parse_config($_SERVER['DOCUMENT_ROOT'].'/.monodb.env');
-            if ( !empty($config) && is_array($config) ) {
+        } elseif ( ! empty( $_SERVER['DOCUMENT_ROOT'] ) ) {
+            $config = $this->parse_config( $_SERVER['DOCUMENT_ROOT'].'/.monodb.env' );
+            if ( ! empty( $config ) && is_array( $config ) ) {
                 return $config;
             }
         }
 
-        $file = getenv('MONODB_ENV', true);
-        $config = $this->parse_config($file);
-        if ( !empty($config) && is_array($config) ) {
+        $file = getenv( 'MONODB_ENV', true );
+        $config = $this->parse_config( $file );
+        if ( ! empty( $config ) && is_array( $config ) ) {
             return $config;
         }
 
         return false;
     }
 
-    private function parse_config($file) {
+    private function parse_config( $file ) {
         $config = [];
-        if ( !empty($file) && Func::is_file_readable($file) ) {
-            $buff = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            if ( !empty($buff) && \is_array($buff) ) {
-                foreach($buff as $line) {
+        if ( ! empty( $file ) && Func::is_file_readable( $file ) ) {
+            $buff = file( $file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+            if ( ! empty( $buff ) && \is_array( $buff ) ) {
+                foreach ( $buff as $line ) {
                     if ( '#' === $line{0} ) {
                         continue;
                     }
 
-                    if ( Func::has_with($line, '=') ) {
-                        list($key, $value) = explode('=', trim($line));
-                        $key = strtolower(trim($key));
-                        $value = trim($value);
-                        if ( !empty($key) && property_exists($this, $key) && !empty($value) ) {
-                            $config[$key] = $value;
+                    $line = str_replace( [ '"', "'" ], '', $line );
+                    if ( Func::has_with( $line, '=' ) ) {
+                        list($key, $value) = explode( '=', trim( $line ) );
+                        $key = strtolower( trim( $key ) );
+                        $value = trim( $value );
+                        if ( ! empty( $key ) && property_exists( $this, $key ) && ! empty( $value ) ) {
+                            $config[ $key ] = $value;
                         }
                     }
                 }
-                if ( !empty($config) ) {
-                    $config['env'] = $file; 
+                if ( ! empty( $config ) ) {
+                    $config['env'] = $file;
                 }
             }
         }
