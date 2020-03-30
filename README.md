@@ -1,6 +1,8 @@
 
 # ![MonoDB](https://static.monodb.io/logo-150x150.svg) MonoDB
 
+__** NOTE: MonoDB currently work in progress heavily in development stage. Changes and refactoring the code will be expected.**__
+
 MonoDB is flat-file key-value data structure store, used as a database, cache and message broker. 
 
 Simple by design, included with console command, intends to provide as alternative options when you need quick and reliable solution to store and retrieve data without require a server-based application.
