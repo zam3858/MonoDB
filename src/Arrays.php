@@ -9,53 +9,63 @@
  */
 
 namespace Monodb;
+
 use Monodb\Functions as Func;
 
-class Arrays {
-
-    public static function keys( array $array, bool $recursive = false ): array {
-        if ( $recursive ) {
-            if ( preg_match_all( '@(\s*?Array\n*\(\n+)?\s*\[(.*?)\]\s*=\>\s*@m', print_r( $array, 1 ), $mm ) ) {
+/**
+ * Class Arrays.
+ */
+class Arrays
+{
+    public static function keys(array $array, bool $recursive = false): array
+    {
+        if ($recursive) {
+            if (preg_match_all('@(\s*?Array\n*\(\n+)?\s*\[(.*?)\]\s*=\>\s*@m', print_r($array, 1), $mm)) {
                 $keys = $mm[2];
             }
         } else {
-            $keys = array_keys( $array );
+            $keys = array_keys($array);
         }
 
         return $keys;
     }
 
     /**
-     * keys_flat().
+     * @param mixed $parent_key
      */
-    public static function keys_flat( $array, $parent_key = '' ) {
-        $keys = array_keys( $array );
-        foreach ( $array as $parent_key => $i ) {
-            if ( \is_array( $i ) ) {
-                $nested_keys = self::{__FUNCTION__}( $i, $parent_key );
-                foreach ( $nested_keys as $index => $key ) {
-                    $nested_keys[ $index ] = $parent_key.'.'.$key;
+    public static function keysFlatten(array $array, $parent_key = ''): string
+    {
+        $keys = array_keys($array);
+        foreach ($array as $parent_key => $cnt) {
+            if (\is_array($cnt)) {
+                $nestedKeys = self::{__FUNCTION__}($cnt, $parent_key);
+                foreach ($nestedKeys as $index => $key) {
+                    $nestedKeys[$index] = $parent_key.'.'.$key;
                 }
-                $keys = array_merge( $keys, $nested_keys );
+                $keys = array_merge($keys, $nestedKeys);
             }
         }
+
         return $keys;
     }
 
     /**
-     * keys_walk().
+     * @param mixed $callback
+     *
+     * @return mixed
      */
-    public static function keys_walk( array $array, $callback = [] ) {
+    public static function map(array $array, $callback = [])
+    {
         $results = [];
 
-        foreach ( $array as $arr_key => $arr_value ) {
-            if ( is_callable( $callback ) ) {
-                $key = \call_user_func_array( $callback, [ $arr_key, $arr_value ] );
+        foreach ($array as $arrKey => $arrValue) {
+            if (\is_callable($callback)) {
+                $key = \call_user_func_array($callback, [$arrKey, $arrValue]);
             } else {
-                $key = ( $callback[ $arr_key ] ?? $arr_key );
+                $key = ($callback[$arrKey] ?? $arrKey);
             }
 
-            $results[ $key ] = ( \is_array( $arr_value ) ? self::{__FUNCTION__}( $arr_value, $callback ) : $arr_value );
+            $results[$key] = (\is_array($arrValue) ? self::{__FUNCTION__}($arrValue, $callback) : $arrValue);
         }
 
         return $results;
@@ -64,86 +74,153 @@ class Arrays {
     /**
      * Searches the array for a given value and returns the first corresponding array/string if successful.
      *
-     * @access private
-     * @param array $array_data Array data to search
-     * @param array|string $find_value Array value to find
-     * @param array|string $find_key (Optional) Array key to find
-     * @return array|string|false Returns array or string if found, false otherwise
+     * @param mixed $arrayData Array data to search
+     * @param mixed $findValue Array value to find
+     * @param mixed $findKey   (Optional) Array key to find
+     *
+     * @return mixed Returns array or string if found, false otherwise
      */
-    public static function search( $array_data, $find_value, $find_key = '' ) {
-        if ( \is_array( $array_data ) ) {
-            foreach ( $array_data as $arr_key => $arr_value ) {
-                $current_key = $arr_key;
+    public static function search($arrayData, $findValue, $findKey = '')
+    {
+        if (\is_array($arrayData)) {
+            foreach ($arrayData as $arrKey => $arrValue) {
+                $currentKey = $arrKey;
 
-                if ( ( ! \is_array( $arr_value ) && Func::match_wildcard( $arr_value, $find_value ) )
-                    || ( \is_array( $arr_value ) && self::{__FUNCTION__}( $arr_value, $find_value, $find_key ) !== false ) ) {
-
+                if ((!\is_array($arrValue) && Func::matchWildcard($arrValue, $findValue))
+                    || (\is_array($arrValue) && false !== self::{__FUNCTION__}($arrValue, $findValue, $findKey))) {
                     // found value
-                    $found = $array_data[ $current_key ];
+                    $found = $arrayData[$currentKey];
 
-                    if ( \is_array( $found ) && ! empty( $find_key ) ) {
-                        $keys = self::keys( $found, true );
-                        if ( ! self::is_empty( $keys ) ) {
-                            foreach ( $keys as $k ) {
-                                if ( Func::match_wildcard( $k, $find_key ) ) {
+                    if (\is_array($found) && !empty($findKey)) {
+                        $keys = self::keys($found, true);
+                        if (!self::isEmpty($keys)) {
+                            foreach ($keys as $k) {
+                                if (Func::matchWildcard($k, $findKey)) {
                                     return $found;
                                 }
                             }
                         }
 
                         // null to skip
-                        return null;
+                        return;
                     }
 
-                    return ( \is_array( $found ) ? $found : [ $current_key => $found ] );
+                    return \is_array($found) ? $found : [$currentKey => $found];
                 }
             }
         }
+
         return false;
     }
 
     /**
-     * from_object().
+     * Convert object to array.
+     *
+     * @param mixed $object
+     *
+     * @return mixed Returns array if successful, false oterwise
      */
-    public static function convert_object( $object ) {
-        return json_decode( json_encode( $object ), true );
+    public static function convertObject($object)
+    {
+        $array = json_decode(json_encode($object), true);
+
+        return \is_array($array) ? $array : false;
     }
 
     /**
-     * is_empty().
+     * Count maximum depth or array.
      */
-    public static function is_empty( $array, $key = null ): bool {
-        if ( ! \is_array( $array ) ) {
+    public static function maxDepth(array $array): int
+    {
+        $iterator = new \RecursiveIteratorIterator(
+                    new \RecursiveArrayIterator($array),
+                    \RecursiveIteratorIterator::CHILD_FIRST
+                );
+        $iterator->rewind();
+        $maxDepth = 0;
+        foreach ($iterator as $k => $v) {
+            $depth = $iterator->getDepth();
+            if ($depth > $maxDepth) {
+                $maxDepth = $depth;
+            }
+        }
+
+        return $maxDepth;
+    }
+
+    /**
+     * Count all elements in an array.
+     */
+    public static function length(array $array): int
+    {
+        return \count($array);
+    }
+
+    /**
+     * Equalize array keys.
+     *
+     * @param string $emptyValue
+     * @param string $keys
+     */
+    public static function keysEqualize(array $array, $emptyValue = '', &$keys = ''): array
+    {
+        if (self::isNumeric($array) && self::isSequential($array) && self::isMulti($array) && !self::isAssoc($array)) {
+            $keys = [];
+            foreach ($array as $n => $v) {
+                $keys = array_merge($keys, array_keys($v));
+            }
+            $keys = array_unique($keys);
+            $dd = [];
+            foreach ($array as $n => $v) {
+                if (\is_array($v)) {
+                    foreach ($keys as $a) {
+                        if (!isset($v[$a])) {
+                            $dd[$n][$a] = $emptyValue;
+                        } else {
+                            $dd[$n][$a] = $v[$a];
+                        }
+                    }
+                }
+            }
+
+            $array = $dd;
+            asort($array);
+        }
+
+        return $array;
+    }
+
+    /**
+     * @param mixed $array
+     * @param null  $key
+     */
+    public static function isEmpty($array, $key = null): bool
+    {
+        if (!\is_array($array)) {
             return true;
         }
 
-        return ( null !== $key ? empty( $array[ $key ] ) : empty( $array ) );
+        return null !== $key ? empty($array[$key]) : empty($array);
     }
 
-    /**
-     * is_sequence().
-     */
-    public static function is_sequential( array $array ): bool {
-        return ( self::keys( $array ) === range( 0, \count( $array ) - 1 ) );
+    public static function isSequential(array $array): bool
+    {
+        return self::keys($array) === range(0, \count($array) - 1);
     }
 
-    /**
-     * is_multi().
-     */
-    public static function is_multi( array $array ): bool {
-        return ! ( \count( $array ) === \count( $array, true ) );
+    public static function isMulti(array $array): bool
+    {
+        return !(\count($array) === \count($array, true));
     }
 
-    /**
-     * is_numeric().
-     */
-    public static function is_numeric( array $array ): bool {
-        if ( empty( $array ) ) {
+    public static function isNumeric(array $array): bool
+    {
+        if (empty($array)) {
             return false;
         }
 
-        foreach ( self::keys( $array ) as &$key ) {
-            if ( (int) $key !== $key ) {
+        foreach (self::keys($array) as &$key) {
+            if ((int) $key !== $key) {
                 return false;
             }
         }
@@ -151,20 +228,18 @@ class Arrays {
         return true;
     }
 
-    /**
-     * is_assoc().
-     */
-    public static function is_assoc( array $array, bool $recursive = false ): bool {
-        if ( empty( $array ) ) {
+    public static function isAssoc(array $array, bool $recursive = false): bool
+    {
+        if (empty($array)) {
             return false;
         }
 
-        foreach ( self::keys( $array, $recursive ) as &$key ) {
-            if ( (string) $key === $key ) {
-                return true;
+        foreach (self::keys($array, $recursive) as &$key) {
+            if ((string) $key !== $key) {
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 }

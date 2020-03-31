@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitaff3d55f809f201cdaee4379c6230e5f
+class ComposerStaticInitcf9ade7e16c3cf7a7b139c8a82f5073c
 {
     public static $files = array (
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
@@ -94,12 +94,13 @@ class ComposerStaticInitaff3d55f809f201cdaee4379c6230e5f
     public static $classMap = array (
         'JsonException' => __DIR__ . '/..' . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
         'Monodb\\Arrays' => __DIR__ . '/../..' . '/src/Arrays.php',
+        'Monodb\\Command\\AppendCommand' => __DIR__ . '/../..' . '/src/Command/AppendCommand.php',
         'Monodb\\Command\\Decr' => __DIR__ . '/../..' . '/src/Command/Decr.php',
         'Monodb\\Command\\Del' => __DIR__ . '/../..' . '/src/Command/Del.php',
         'Monodb\\Command\\Exists' => __DIR__ . '/../..' . '/src/Command/Exists.php',
         'Monodb\\Command\\Expire' => __DIR__ . '/../..' . '/src/Command/Expire.php',
         'Monodb\\Command\\Find' => __DIR__ . '/../..' . '/src/Command/Find.php',
-        'Monodb\\Command\\Flush' => __DIR__ . '/../..' . '/src/Command/Flush.php',
+        'Monodb\\Command\\Flushdb' => __DIR__ . '/../..' . '/src/Command/Flushdb.php',
         'Monodb\\Command\\Get' => __DIR__ . '/../..' . '/src/Command/Get.php',
         'Monodb\\Command\\Incr' => __DIR__ . '/../..' . '/src/Command/Incr.php',
         'Monodb\\Command\\Info' => __DIR__ . '/../..' . '/src/Command/Info.php',
@@ -240,9 +241,9 @@ class ComposerStaticInitaff3d55f809f201cdaee4379c6230e5f
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitaff3d55f809f201cdaee4379c6230e5f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitaff3d55f809f201cdaee4379c6230e5f::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitaff3d55f809f201cdaee4379c6230e5f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitcf9ade7e16c3cf7a7b139c8a82f5073c::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitcf9ade7e16c3cf7a7b139c8a82f5073c::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitcf9ade7e16c3cf7a7b139c8a82f5073c::$classMap;
 
         }, null, ClassLoader::class);
     }

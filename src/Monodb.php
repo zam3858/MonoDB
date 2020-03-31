@@ -10,56 +10,102 @@
 
 namespace Monodb;
 
-use Monodb\Functions as Func;
 use Monodb\Arrays as Arr;
+use Monodb\Functions as Func;
 
-class Monodb {
-
+/**
+ * Class Monodb.
+ */
+class Monodb
+{
+    /**
+     * @ignore
+     */
     const VERSION = '1.0.0';
+
+    /**
+     * @ignore
+     */
     const NAME = 'MonoDB';
+
+    /**
+     * @ignore
+     */
     const DESC = 'A flat-file key-value data structure';
+
+    /**
+     * @ignore
+     */
     const URL = 'https://monodb.io';
 
-    protected $config = [];
+    /**
+     * @var array
+     */
+    private $config = [];
 
-    private $chain_blob = false;
-    private $chain_meta = false;
-    private $chain_encrypt = false;
-    private $chain_decrypt = false;
+    /**
+     * @var bool
+     */
+    private $chainBlob = false;
+
+    /**
+     * @var bool
+     */
+    private $chainMeta = false;
+
+    /**
+     * @var bool
+     */
+    private $chainEncrypt = false;
+
+    /**
+     * @var bool
+     */
+    private $chainDecrypt = false;
+
+    /**
+     * @var array
+     */
     private $errors = [];
 
     /**
      * Initialize the class and set its properties.
+     *
+     * @param array $options Database options
+     *
+     * @return void
      */
-    public function __construct( array $options = [] ) {
-        $this->check_dependencies();
-        $this->config = new Config( $options );
+    public function __construct(array $options = [])
+    {
+        $this->checkDependencies();
+        $this->config = new Config($options);
         $this->errors = [];
     }
 
     /**
      * Destructor: Will run when object is destroyed.
      *
-     * @return bool Always true
+     * @return void
      */
-    public function __destruct() {
+    public function __destruct()
+    {
         $this->errors = [];
-        return true;
     }
 
     /**
      * Dependecnises check for non composer installation.
      *
-     * @return mixed Throw error when failed, true otherwise.
+     * @return mixed Throw error when failed, true otherwise
      */
-    private function check_dependencies() {
-         $php_version = '7.1';
-        if ( version_compare( PHP_VERSION, $php_version, '<' ) ) {
-            throw new \Exception( 'MonoDB requires PHP Version '.$php_version.' and above.' );
+    private function checkDependencies()
+    {
+        $php_version = '7.1';
+        if (version_compare(PHP_VERSION, $php_version, '<')) {
+            throw new \Exception('MonoDB requires PHP Version '.$php_version.' and above.');
         }
 
-        if ( ! extension_loaded( 'json' ) ) {
-            throw new \Exception( 'MonoDB requires json extension.' );
+        if (!\extension_loaded('json')) {
+            throw new \Exception('MonoDB requires json extension.');
         }
 
         return true;
@@ -68,33 +114,40 @@ class Monodb {
     /**
      * Set class options.
      *
-     * @access public
-     * @param array $options
-     * @return object class object
+     * @param array $options Database options
+     *
+     * @return self Returns this Inheritance
      */
-    public function options( $options = [] ) {
-        $this->chain_blob = false;
-        $this->chain_meta = false;
-        $this->chain_encrypt = false;
-        $this->chain_decrypt = false;
-        $this->config->set_options( $options );
+    public function options($options = []): self
+    {
+        $this->chainBlob = false;
+        $this->chainMeta = false;
+        $this->chainEncrypt = false;
+        $this->chainDecrypt = false;
+
+        $this->config->setOptions($options);
+
         return $this;
     }
 
     /**
-     * catch_debug().
+     * Collect debug message.
      *
-     * @access private
+     * @param mixed $caller Collect from callable
+     * @param mixed $status Message status
+     *
+     * @return void Returns nothing
      */
-    private function catch_debug( $caller, $status ) {
+    private function catchDebug($caller, $status): void
+    {
         $log = [
-            'timestamp' => gmdate( 'Y-m-d H:i:s' ).' UTC',
+            'timestamp' => gmdate('Y-m-d H:i:s').' UTC',
             'caller' => $caller,
-            'status' => $status
+            'status' => $status,
         ];
 
-        if ( is_array( $status ) ) {
-            $log = array_merge( $log, $status );
+        if (\is_array($status)) {
+            $log = array_merge($log, $status);
         }
 
         $this->errors[] = $log;
@@ -103,45 +156,49 @@ class Monodb {
     /**
      * Return errors log.
      *
-     * @access public
-     * @return array $errors
+     * @return array returns list of error message
      */
-    public function last_error() {
-         return $this->errors;
+    public function lastError(): array
+    {
+        return $this->errors;
     }
 
     /**
      * Check and replace invalid key.
      *
-     * @access private
-     * @return string sanitized key
+     * @param string $key Data key
+     *
+     * @return string Returns Sanitized key
      */
-    private function sanitize_key( string $key ) {
-        $key_r = preg_replace( '@[^A-Za-z0-9.-:]@', '', $key );
-        if ( $key_r !== $key ) {
-            $key = substr( $key_r.md5( $key.$key_r.mt_srand() ), 0, 12 );
+    private function sanitizeKey(string $key): string
+    {
+        $keyr = preg_replace('@[^A-Za-z0-9.-:]@', '', $key);
+        if ($keyr !== $key) {
+            $key = substr($keyr.md5($key.$keyr.mt_srand()), 0, 12);
         }
-        return substr( $key, 0, $this->config->key_length );
+
+        return substr($key, 0, $this->config->key_length);
     }
 
     /**
      * Set and create data file.
      *
-     * @access private
-     * @param string $key Data key
-     * @param boolean $create (Optional) if set to true, data path will create
-     * @return string fulle path of data file
+     * @param string $key    Data key
+     * @param bool   $create (Optional) if set to true, data path will create
+     *
+     * @return string Returns full path of data file
      */
-    private function key_path( $key, $create = true ) {
-        $key = md5( $key );
-        $prefix = substr( $key, 0, 2 );
+    private function keyPath(string $key, bool $create = true): string
+    {
+        $key = md5($key);
+        $prefix = substr($key, 0, 2);
         $path = $this->config->dbdir.$prefix.'/';
-        $key = substr( $key, 2 );
+        $key = substr($key, 2);
 
-        if ( $create && ! is_dir( $path ) && mkdir( $path, $this->config->perm_dir, true ) ) {
-            $id = (string) basename( $path );
-            $code = $this->data_code( $id );
-            $this->data_save( $path.'index.php', $code );
+        if ($create && !is_dir($path) && mkdir($path, $this->config->perm_dir, true)) {
+            $id = (string) basename($path);
+            $code = $this->dataCode($id);
+            $this->dataSave($path.'index.php', $code);
         }
 
         return $path.$key.'.php';
@@ -150,650 +207,714 @@ class Monodb {
     /**
      * Convert data to php script.
      *
-     * @access private
-     * @param array $data Data to save
-     * @return string php script
+     * @param mixed $data Data to save
+     *
+     * @return string Returns generated PHP code
      */
-    private function data_code( $data ) {
+    private function dataCode($data): string
+    {
         $code = '<?php'.PHP_EOL;
-        $code .= 'return '.Func::export_var( $data ).';'.PHP_EOL;
+        $code .= 'return '.Func::exportVar($data).';'.PHP_EOL;
+
         return $code;
     }
 
     /**
      * Save data.
      *
-     * @access private
      * @param string $file File to save
      * @param string $data Data to save
-     * @return boolean Returns true if successful, false otherwise
+     *
+     * @return bool Returns true if successful, false otherwise
      */
-    private function data_save( $file, $data ) {
-        if ( file_put_contents( $file, $data, LOCK_EX ) ) {
-            chmod( $file, $this->config->perm_file );
+    private function dataSave($file, $data): bool
+    {
+        if (file_put_contents($file, $data, LOCK_EX)) {
+            chmod($file, $this->config->perm_file);
+
             return true;
         }
+
         return false;
     }
 
     /**
      * Update data.
      *
-     * @access private
-     * @param string $key Data key
-     * @param array $data Data to update
-     * @return string|false Returns key string if successful, false otherwise
+     * @param string $key  Data key
+     * @param array  $data Data to update
+     *
+     * @return mixed Returns key string if successful, false otherwise
      */
-    private function data_update( $key, $data ) {
-        if ( ! empty( $data ) && \is_array( $data ) && ! empty( $data['timestamp'] ) ) {
-            if ( $this->exists( $key ) ) {
-                $file = $this->key_path( $key, false );
+    private function dataUpdate(string $key, array $data)
+    {
+        if (!empty($data) && \is_array($data) && !empty($data['timestamp'])) {
+            if ($this->exists($key)) {
+                $file = $this->keyPath($key, false);
 
-                if ( Func::is_file_writable( $file ) ) {
-                    $data['timestamp'] = gmdate( 'Y-m-d H:i:s' ).' UTC';
+                if (Func::isFileWritable($file)) {
+                    $data['timestamp'] = gmdate('Y-m-d H:i:s').' UTC';
 
-                    $code = $this->data_code( $data );
-                    if ( $this->data_save( $file, $code ) ) {
-                        $this->set_index( $key, $file, $data );
+                    $code = $this->dataCode($data);
+                    if ($this->dataSave($file, $code)) {
+                        $this->setIndex($key, $file, $data);
+
                         return $key;
                     }
                 }
             }
         }
+
         return false;
     }
 
     /**
      * Read data.
      *
-     * @access private
      * @param string $file File to read
-     * @return array|false Returns array if successful, false otherwise
+     *
+     * @return array Returns array if successful
      */
-    private function data_read( $file ) {
-        $data = false;
-        try {
-            $data = include( $file );
-        } catch ( \Exception $e ) {
-            $this->catch_debug( __METHOD__, $e->getMessage() );
-        }
+    private function dataRead($file): array
+    {
+        $data = include $file;
+
         return $data;
     }
 
     /**
      * Save index data.
      *
-     * @access private
-     * @param string $key Data key
+     * @param string $key  Data key
      * @param string $path Data file
-     * @param array $item Data item
-     * @return boolean Returns true if successful, false otherwise
+     * @param array  $item Data item
+     *
+     * @return bool Returns true if successful, false otherwise
      */
-    private function set_index( $key, $path, $item ) {
+    private function setIndex(string $key, string $path, array $item): bool
+    {
         $file = $this->config->dbindex;
         $index = [];
-        if ( Func::is_file_readable( $file ) ) {
-            $index = $this->data_read( $file );
-            if ( empty( $index ) || ! \is_array( $index ) ) {
+        if (Func::isFileReadable($file)) {
+            $index = $this->dataRead($file);
+            if (empty($index) || !\is_array($index)) {
                 $index = [];
             }
         }
 
-        $index[ $key ]['key'] = $key;
-        $index[ $key ]['index'] = ltrim( str_replace( ltrim( $this->config->dbdir, './' ), '', trim( $path, '.php' ) ), '/' );
-        $index[ $key ]['timestamp'] = $item['timestamp'];
-        $index[ $key ]['expiry'] = ( ! empty( $item['expiry'] ) ? $item['expiry'] : 0 );
-        $index[ $key ]['type'] = $item['type'];
-        $index[ $key ]['size'] = $item['size'];
-        $index[ $key ]['encoded'] = ( ! empty( $item['encoded'] ) ? $item['encoded'] : 0 );
+        $index[$key]['key'] = $key;
+        $index[$key]['index'] = ltrim(str_replace(ltrim($this->config->dbdir, './'), '', trim($path, '.php')), '/');
+        $index[$key]['timestamp'] = $item['timestamp'];
+        $index[$key]['expiry'] = (!empty($item['expiry']) ? $item['expiry'] : 0);
+        $index[$key]['type'] = $item['type'];
+        $index[$key]['size'] = $item['size'];
+        $index[$key]['encoded'] = (!empty($item['encoded']) ? $item['encoded'] : 0);
 
-        $code = $this->data_code( $index );
-        return $this->data_save( $file, $code );
+        $code = $this->dataCode($index);
+
+        return $this->dataSave($file, $code);
     }
 
     /**
      * Remove index data.
      *
-     * @access private
      * @param string $key Data key
-     * @param string $path Data file
-     * @return boolean Returns true if successful, false otherwise
+     *
+     * @return bool Returns true if successful, false otherwise
      */
-    private function unset_index( $key ) {
+    private function unsetIndex(string $key): bool
+    {
         $file = $this->config->dbindex;
         $index = [];
-        if ( file_exists( $file ) ) {
-            $index = $this->data_read( $file );
-            if ( ! empty( $index ) && \is_array( $index ) ) {
-                if ( ! empty( $index[ $key ] ) ) {
-                    unset( $index[ $key ] );
+        if (file_exists($file)) {
+            $index = $this->dataRead($file);
+            if (!empty($index) && \is_array($index)) {
+                if (!empty($index[$key])) {
+                    unset($index[$key]);
                 }
 
-                $code = $this->data_code( $index );
-                return $this->data_save( $file, $code );
+                $code = $this->dataCode($index);
+
+                return $this->dataSave($file, $code);
             }
         }
+
         return false;
     }
 
     /**
      * Get file content.
      *
-     * @access private
-     * @param string $data File fullpath
-     * @param array $extra_meta (Optional) Meta data to add
-     * @return string Returns File content if successful, File fullpath otherwise
+     * @param string $data       File fullpath
+     * @param array  $extra_meta (Optional) Meta data to add
+     *
+     * @return string Returns content of file if successful, fullpath of file otherwise
      */
-    private function fetch_file( $data, &$extra_meta = [] ) {
-        if ( \is_string( $data ) && Func::start_with( $data, 'file://' ) ) {
+    private function fetchFile($data, &$extra_meta = [])
+    {
+        if (\is_string($data) && Func::startWith($data, 'file://')) {
             $src = $data;
-            $fi = Func::strip_scheme( $src );
-            if ( ! Func::start_with( $fi, [ '.','/' ] ) ) {
+            $fi = Func::stripScheme($src);
+            if (!Func::startWith($fi, ['.', '/'])) {
                 $fi = getcwd().'/'.$fi;
             }
-            if ( Func::is_file_readable( $fi ) ) {
-                if ( empty( $extra_meta['mime'] ) ) {
-                    $mime = mime_content_type( $fi );
-                    if ( ! empty( $mime ) ) {
+            if (Func::isFileReadable($fi)) {
+                if (empty($extra_meta['mime'])) {
+                    $mime = mime_content_type($fi);
+                    if (!empty($mime)) {
                         $extra_meta['mime'] = $mime;
                     }
                 }
                 $extra_meta['source'] = $src;
                 try {
-                    $data = file_get_contents( $fi );
-                } catch ( \Exception $e ) {
-                    $this->catch_debug( __METHOD__, $e->getMessage() );
+                    $data = file_get_contents($fi);
+                } catch (\Exception $e) {
+                    $this->catchDebug(__METHOD__, $e->getMessage());
                 }
             }
         }
+
         return $data;
     }
 
     /**
      * Remove data directory if empty.
      *
-     * @access private
      * @param string $file Data file
-     * @return boolean Returns true if successful, false otherwise
+     *
+     * @return bool Returns true if successful, false otherwise
      */
-    private function flush_key_path( $file ) {
-        $dir = dirname( $file );
-        if ( empty( $dir ) || '/' === $dir || ! is_dir( $dir ) ) {
+    private function flushKeyPath($file): bool
+    {
+        $dir = \dirname($file);
+        if (empty($dir) || '/' === $dir || !is_dir($dir)) {
             return false;
         }
 
-        $fc = glob( $dir.'/*.php' );
-        if ( empty( $fc ) ) {
-            return rmdir( $dir.'/' );
+        $fc = glob($dir.'/*.php');
+        if (empty($fc)) {
+            return rmdir($dir.'/');
         }
 
-        if ( ! file_exists( $dir.'/index.php' ) ) {
-            touch( $dir.'/index.php' );
+        if (!file_exists($dir.'/index.php')) {
+            touch($dir.'/index.php');
         }
 
-        if ( \count( $fc ) <= 1 ) {
-            array_map( 'unlink', $fc );
-            return rmdir( $dir.'/' );
+        if (\count($fc) <= 1) {
+            array_map('unlink', $fc);
+
+            return rmdir($dir.'/');
         }
 
         return false;
     }
 
     /**
-     * set().
+     * Set the string value of key.
      *
-     * @access public
+     * @param mixed $data       Data content
+     * @param array $extra_meta (Optional) Meta data to add
+     *
+     * @return mixed Returns key string if successful, false otherwise
      */
-    public function set( string $key, $data, $expiry = 0, $extra_meta = [] ) {
-        $key = $this->sanitize_key( $key );
-        $data = $this->fetch_file( $data, $extra_meta );
+    public function set(string $key, $data, $expiry = 0, $extra_meta = [])
+    {
+        $key = $this->sanitizeKey($key);
+        $data = $this->fetchFile($data, $extra_meta);
 
         $meta = [
-            'timestamp' => gmdate( 'Y-m-d H:i:s' ).' UTC',
+            'timestamp' => gmdate('Y-m-d H:i:s').' UTC',
             'key' => $key,
-            'type' => Func::get_type( $data ),
-            'size' => Func::get_size( $data )
+            'type' => Func::get_type($data),
+            'size' => Func::getSize($data),
         ];
 
-        if ( 'closure' === $meta['type'] || 'resource' === $meta['type'] ) {
-            $this->catch_debug( __METHOD__, 'Data type not supported: '.$meta['type'] );
+        if ('closure' === $meta['type'] || 'resource' === $meta['type']) {
+            $this->catchDebug(__METHOD__, 'Data type not supported: '.$meta['type']);
+
             return false;
         }
 
-        if ( 'binary' === $meta['type'] ) {
+        if ('binary' === $meta['type']) {
             $blob_size = (int) $meta['size'];
-            if ( $blob_size >= $this->config->blob_size ) {
-                $this->catch_debug( __METHOD__, 'Maximum binary size exceeded: '.$blob_size );
+            if ($blob_size >= $this->config->blob_size) {
+                $this->catchDebug(__METHOD__, 'Maximum binary size exceeded: '.$blob_size);
+
                 return false;
             }
 
-            $data = base64_encode( $data );
-            $meta['size'] = \strlen( $data );
+            $data = base64_encode($data);
+            $meta['size'] = \strlen($data);
             $meta['encoded'] = 1;
         }
 
-        if ( ! empty( $expiry ) && Func::is_var_num( $expiry ) ) {
+        if (!empty($expiry) && Func::isNum($expiry)) {
             $expiry = (int) $expiry;
-            if ( $expiry > 0 ) {
+            if ($expiry > 0) {
                 $meta['expiry'] = time() + $expiry;
             }
-        } elseif ( ! empty( $this->config->key_expiry ) ) {
+        } elseif (!empty($this->config->key_expiry)) {
             $meta['expiry'] = (int) $this->key_expiry;
         }
 
-        if ( ! empty( $extra_meta ) && \is_array( $extra_meta ) ) {
-            $meta = array_merge( $meta, $extra_meta );
+        if (!empty($extra_meta) && \is_array($extra_meta)) {
+            $meta = array_merge($meta, $extra_meta);
         }
 
-        if ( false !== $this->chain_encrypt && \is_string( $this->chain_encrypt ) ) {
-            $data = Func::encrypt( $data, $this->chain_encrypt );
-            $meta['size'] = \strlen( $data );
-            $meta['encoded'] = ( ! empty( $meta['encoded'] ) ? 3 : 2 );
+        if (false !== $this->chainEncrypt && \is_string($this->chainEncrypt)) {
+            $data = Func::encrypt($data, $this->chainEncrypt);
+            $meta['size'] = \strlen($data);
+            $meta['encoded'] = (!empty($meta['encoded']) ? 3 : 2);
         }
-        $this->chain_encrypt = false;
+        $this->chainEncrypt = false;
 
         $meta['value'] = $data;
-        $code = $this->data_code( $meta );
+        $code = $this->dataCode($meta);
 
-        $file = $this->key_path( $key, true );
-        if ( $this->data_save( $file, $code ) ) {
-            $this->set_index( $key, $file, $meta );
+        $file = $this->keyPath($key, true);
+        if ($this->dataSave($file, $code)) {
+            $this->setIndex($key, $file, $meta);
+
             return $key;
         }
 
-        $this->catch_debug( __METHOD__, 'Failed to set '.$key );
+        $this->catchDebug(__METHOD__, 'Failed to set '.$key);
+
         return false;
     }
 
     /**
-     * get().
+     * Get data.
      *
-     * @access public
+     * @param string $key   Data key
+     * @param array  $debug (Optional) Debug message
+     *
+     * @return mixed Returns string or array if successful, false otherwise
      */
-    public function get( string $key, &$debug = [] ) {
-        $key = $this->sanitize_key( $key );
+    public function get(string $key, &$debug = [])
+    {
+        $key = $this->sanitizeKey($key);
 
-        if ( ! $this->exists( $key ) ) {
+        if (!$this->exists($key)) {
             $debug[] = 'Key '.$key.' not exists';
+
             return false;
         }
 
-        $file = $this->key_path( $key, false );
+        $file = $this->keyPath($key, false);
 
-        $chain_meta = $this->chain_meta;
-        $this->chain_meta = false;
+        $chainMeta = $this->chainMeta;
+        $this->chainMeta = false;
 
-        $chain_blob = $this->chain_blob;
-        $this->chain_blob = false;
+        $chainBlob = $this->chainBlob;
+        $this->chainBlob = false;
 
-        if ( Func::is_file_readable( $file ) ) {
-            $meta = $this->data_read( $file );
-            if ( ! \is_array( $meta ) || empty( $meta ) || ( empty( $meta['value'] ) && 0 !== (int) $meta['value'] ) ) {
-                $this->delete( $key );
+        if (Func::isFileReadable($file)) {
+            $meta = $this->dataRead($file);
+            if (!\is_array($meta) || empty($meta) || (empty($meta['value']) && 0 !== (int) $meta['value'])) {
+                $this->delete($key);
                 $debug[] = 'Delete Invalid data';
+
                 return false;
             }
 
-            if ( ! empty( $meta['expiry'] ) && Func::is_var_num( $meta['expiry'] ) ) {
-                if ( time() >= (int) $meta['expiry'] ) {
-                    $this->delete( $key );
+            if (!empty($meta['expiry']) && Func::isNum($meta['expiry'])) {
+                if (time() >= (int) $meta['expiry']) {
+                    $this->delete($key);
                     $debug = [
                         'status' => 'expired',
                         'Key' => $key,
                         'Expiry' => gmdate(
                             'Y-m-d H:i:s',
                             $meta['expiry']
-                        )
+                        ),
                     ];
-                    $this->catch_debug( __METHOD__, $debug );
+                    $this->catchDebug(__METHOD__, $debug);
+
                     return false;
                 }
             }
 
             $data = $meta['value'];
-            $data_plain = true;
-            if ( false !== $this->chain_decrypt && \is_string( $this->chain_decrypt ) && ! empty( $meta['encoded'] ) && ( 2 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'] ) ) {
-                $data_r = Func::decrypt( $data, $this->chain_decrypt );
-                if ( empty( $data_r ) || ! ctype_print( $data_r ) ) {
-                    $data_plain = false;
+            $dataPlain = true;
+            if (false !== $this->chainDecrypt && \is_string($this->chainDecrypt) && !empty($meta['encoded']) && (2 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'])) {
+                $data_r = Func::decrypt($data, $this->chainDecrypt);
+                if (empty($data_r) || !ctype_print($data_r)) {
+                    $dataPlain = false;
                 } else {
                     $data = $data_r;
-                    $meta['encoded'] = ( 3 === (int) $meta['encoded'] ? 1 : 0 );
+                    $meta['encoded'] = (3 === (int) $meta['encoded'] ? 1 : 0);
                 }
             }
-            $this->chain_decrypt = false;
+            $this->chainDecrypt = false;
 
-            if ( $data_plain && $chain_blob && 'binary' === $meta['type'] && ! empty( $meta['encoded'] ) && ( 1 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'] ) ) {
-                $data = base64_decode( $data );
-                $meta['encoded'] = ( 3 === (int) $meta['encoded'] ? 2 : 0 );
+            if ($dataPlain && $chainBlob && 'binary' === $meta['type'] && !empty($meta['encoded']) && (1 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'])) {
+                $data = base64_decode($data, true);
+                $meta['encoded'] = (3 === (int) $meta['encoded'] ? 2 : 0);
             }
 
             $meta['value'] = $data;
 
-            return ( ! $chain_meta ? $meta['value'] : $meta );
+            return !$chainMeta ? $meta['value'] : $meta;
         }
 
         return false;
     }
 
     /**
-     * mget().
+     * Get multiple data.
      *
-     * @access public
+     * @param string $keys Data keys
+     *
+     * @return array Returns array, always successful
      */
-    public function mget( ...$keys ) {
+    public function mget(...$keys): array
+    {
         $results = [];
-        foreach ( $keys as $key ) {
-            $results[ $key ] = $this->get( $key );
+        foreach ($keys as $key) {
+            $results[$key] = $this->get($key);
         }
+
         return $results;
     }
 
     /**
-     * delete().
+     * Delete data from database.
      *
-     * @access public
+     * @param string $key Data key
+     *
+     * @return mixed Returns data key if successful, false otherwise
      */
-    public function delete( string $key ) {
-        $key = $this->sanitize_key( $key );
-        $file = $this->key_path( $key, false );
-        if ( Func::is_file_writable( $file ) && unlink( $file ) ) {
-            $this->unset_index( $key );
-            $this->flush_key_path( $file );
+    public function delete(string $key)
+    {
+        $key = $this->sanitizeKey($key);
+        $file = $this->keyPath($key, false);
+        if (Func::isFileWritable($file) && unlink($file)) {
+            $this->unsetIndex($key);
+            $this->flushKeyPath($file);
+
             return $key;
         }
+
         return false;
     }
 
     /**
-     * mdelete().
+     * Delete multiple data from database.
      *
-     * @access public
+     * @param string $keys Data keys
+     *
+     * @return array Returns array list of deleted keys, always successful
      */
-    public function mdelete( ...$keys ) {
+    public function mdelete(...$keys): array
+    {
         $results = [];
-        foreach ( $keys as $key ) {
-            $key = $this->delete( $key );
-            if ( false !== $key ) {
+        foreach ($keys as $key) {
+            $key = $this->delete($key);
+            if (false !== $key) {
                 $results[] = $key;
             }
         }
+
         return $results;
     }
 
     /**
-     * flush().
+     * Remove all keys from current database.
      *
-     * @access public
+     * @return int returns number of keys removed
      */
-    public function flush() {
+    public function flushDb(): int
+    {
         $keys = $this->keys();
         $num = 0;
-        if ( ! empty( $keys ) && \is_array( $keys ) ) {
-            foreach ( $keys as $key ) {
-                if ( false !== $this->delete( $key ) ) {
-                    $num++;
+        if (!empty($keys) && \is_array($keys)) {
+            foreach ($keys as $key) {
+                if (false !== $this->delete($key)) {
+                    ++$num;
                 }
             }
         }
-        return ( $num > 0 ? $num : false );
+
+        return $num;
     }
 
     /**
-     * find_data().
+     * Find data.
      *
-     * @access private
+     * @param string $key   Data key
+     * @param mixed  $match Data match
+     *
+     * @return mixed Returns array if successful, false otherwise
      */
-    private function find_data( string $key, $match ) {
-        $meta = $this->meta()->get( $key );
-        if ( ! empty( $meta ) && \is_array( $meta ) ) {
-            $func_is_invalid = function ( $match, $type ) {
-                if ( ! \is_string( $match ) && ! \is_array( $match ) ) {
+    private function findData(string $key, $match)
+    {
+        $meta = $this->meta()->get($key);
+        if (!empty($meta) && \is_array($meta)) {
+            $isInvalid = function ($match, $type) {
+                if (!\is_string($match) && !\is_array($match)) {
                     return true;
                 }
 
-                if ( \is_array( $match ) && ( empty( $match ) || \count( $match ) !== 2 ) ) {
+                if (\is_array($match) && (empty($match) || 2 !== \count($match))) {
                     return true;
                 }
 
-                if ( 'resource' === $type || 'object' === $type || 'binary' === $type ) {
+                if ('resource' === $type || 'object' === $type || 'binary' === $type) {
                     return true;
                 }
 
                 return false;
             };
 
-            $func_is_array = function ( $type ) {
-                return ( 'array' === $type || 'stdClass' === $type || 'json' === $type );
+            $isArray = function ($type) {
+                return 'array' === $type || 'stdClass' === $type || 'json' === $type;
             };
 
             $type = $meta['type'];
             $data = $meta['value'];
 
-            if ( $func_is_invalid( $match, $type ) ) {
+            if ($isInvalid($match, $type)) {
                 return false;
             }
 
-            if ( $func_is_array( $type ) ) {
-                if ( 'json' === $type && Func::is_var_json( $data ) ) {
-                    $data = json_decode( $data, true );
+            if ($isArray($type)) {
+                if ('json' === $type && Func::isJson($data)) {
+                    $data = json_decode($data, true);
                 } else {
-                    $data = Arr::convert_object( $data );
+                    $data = Arr::convertObject($data);
                 }
-                if ( \is_array( $match ) ) {
-                    $found = Arr::search( $data, $match[1], $match[0] );
-                    return ( ! empty( $found ) ? $found : false );
+                if (\is_array($match)) {
+                    $found = Arr::search($data, $match[1], $match[0]);
+
+                    return !empty($found) ? $found : false;
                 }
 
                 // single
-                $found = Arr::search( $data, $match );
-                return ( ! empty( $found ) ? $found : false );
+                $found = Arr::search($data, $match);
+
+                return !empty($found) ? $found : false;
             }
 
             // not array
-            if ( is_string( $match ) && Func::match_wildcard( $data, $match ) ) {
+            if (\is_string($match) && Func::matchWildcard($data, $match)) {
                 return $data;
             }
         }
+
         return false;
     }
 
     /**
-     * find_all().
+     * Find data in all keys.
      *
-     * @access public
+     * @param mixed $match Data match
+     *
+     * @return array Returns array, always succesful
      */
-    public function find_all( $match ) {
+    public function findAll($match): array
+    {
         $results = [];
         $keys = $this->keys();
-        if ( ! empty( $keys ) && \is_array( $keys ) ) {
-            foreach ( $keys as $key ) {
-                $found = $this->find_data( $key, $match );
-                if ( ! empty( $found ) ) {
-                    $results[ $key ] = $found;
+        if (!empty($keys) && \is_array($keys)) {
+            foreach ($keys as $key) {
+                $found = $this->findData($key, $match);
+                if (!empty($found)) {
+                    $results[$key] = $found;
                 }
             }
         }
+
         return $results;
     }
 
     /**
-     * find().
+     * @param mixed $match
      *
-     * @access public
+     * @return mixed
      */
-    public function find( string $key, $match ) {
-        if ( '*' === $key ) {
-            return $this->find_all( $match );
+    public function find(string $key, $match)
+    {
+        if ('*' === $key) {
+            return $this->findAll($match);
         }
-        return $this->find_data( $key, $match );
-    }
 
-    public function find_array_key( string $key, $array_key ) {
-        if ( '*' === $key ) {
-            return $this->find_all( [ $array_key, '*' ] );
-        }
-        return $this->find_data( $key, [ $array_key, '*' ] );
+        return $this->findData($key, $match);
     }
 
     /**
-     * exists().
+     * @param mixed $array_key
      *
-     * @access public
+     * @return mixed
      */
-    public function exists( string $key ) {
-        $key = $this->sanitize_key( $key );
-        $file = $this->key_path( $key, false );
-        return Func::is_file_readable( $file );
+    public function findArrayKey(string $key, $array_key)
+    {
+        if ('*' === $key) {
+            return $this->findAll([$array_key, '*']);
+        }
+
+        return $this->findData($key, [$array_key, '*']);
+    }
+
+    public function exists(string $key): bool
+    {
+        $key = $this->sanitizeKey($key);
+        $file = $this->keyPath($key, false);
+
+        return Func::isFileReadable($file);
     }
 
     /**
-     * keys().
-     *
-     * @access public
+     * @return mixed
      */
-    public function keys( string $key = '' ) {
+    public function keys(string $key = '')
+    {
         $file = $this->config->dbindex;
-        $chain_meta = $this->chain_meta;
-        $this->chain_meta = false;
+        $chainMeta = $this->chainMeta;
+        $this->chainMeta = false;
 
-        if ( Func::is_file_readable( $file ) ) {
-            $index = $this->data_read( $file );
-            if ( ! empty( $index ) && \is_array( $index ) ) {
-                if ( ! empty( $key ) ) {
+        if (Func::isFileReadable($file)) {
+            $index = $this->dataRead($file);
+            if (!empty($index) && \is_array($index)) {
+                if (!empty($key)) {
                     $rindex = [];
-                    foreach ( $index as $k => $v ) {
-                        if ( Func::match_wildcard( $k, $key ) ) {
-                            if ( $chain_meta ) {
-                                $rindex[ $k ] = $v;
+                    foreach ($index as $k => $v) {
+                        if (Func::matchWildcard($k, $key)) {
+                            if ($chainMeta) {
+                                $rindex[$k] = $v;
                             } else {
                                 $rindex[] = $k;
                             }
                         }
                     }
-                    if ( ! empty( $rindex ) ) {
+                    if (!empty($rindex)) {
                         return $rindex;
                     }
+
                     return false;
                 }
 
-                if ( ! $chain_meta ) {
-                    $index = array_keys( $index );
+                if (!$chainMeta) {
+                    $index = array_keys($index);
                 }
 
                 return $index;
             }
         }
+
         return false;
     }
 
-    /**
-     * chain select().
-     *
-     * @access public
-     */
-    public function select( string $dbname ) {
-        return $this->options( [ 'dbname' => $dbame ] );
+    public function select(string $dbname): self
+    {
+        return $this->options(['dbname' => $dbname]);
+    }
+
+    public function select_dir(string $dir): self
+    {
+        return $this->options(['dir' => $dir]);
     }
 
     /**
-     * info().
-     *
-     * @access public
+     * @return mixed
      */
-    public function info( $name = '' ) {
+    public function info(string $name = '')
+    {
         $info['name'] = $this->name();
         $info['version'] = $this->version();
-        foreach ( $this->config as $k => $v ) {
-            $info['config'][ $k ] = $v;
+        foreach ($this->config as $k => $v) {
+            $info['config'][$k] = $v;
         }
 
-        if ( Func::has_with( $name, 'config:' ) ) {
+        if (Func::hasWith($name, 'config:')) {
             $info = $info['config'];
-            $name = str_replace( 'config:', '', $name );
+            $name = str_replace('config:', '', $name);
         }
 
-        return ( ! empty( $info[ $name ] ) ? $info[ $name ] : $info );
+        return !empty($info[$name]) ? $info[$name] : $info;
     }
 
     /**
-     * incr().
+     * @param string $num
      *
-     * @access public
+     * @return mixed
      */
-    public function incr( string $key, $num = '' ) {
-        $num = ( ! empty( $num ) ? $num : 1 );
-        if ( $this->exists( $key ) ) {
-            $data = $this->get( $key );
-            if ( ! empty( $data ) && 0 !== (int) $data && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
-                if ( $num > PHP_INT_MAX ) {
+    public function incr(string $key, $num = '')
+    {
+        $num = (!empty($num) ? $num : 1);
+        if ($this->exists($key)) {
+            $data = $this->get($key);
+            if (!empty($data) && 0 !== (int) $data && Func::isInt($data) && Func::isInt($num)) {
+                if ($num > PHP_INT_MAX) {
                     return 1;
                 }
 
-                $data = ( $data + $num );
+                $data = ($data + $num);
 
-                if ( $data > PHP_INT_MAX ) {
+                if ($data > PHP_INT_MAX) {
                     return PHP_INT_MAX;
                 }
 
-                if ( $this->set( $key, $data ) ) {
+                if ($this->set($key, $data)) {
                     return $data;
                 }
             }
         }
 
-        if ( false !== $this->set( $key, 1 ) ) {
+        if (false !== $this->set($key, 1)) {
             return 1;
         }
+
         return false;
     }
 
     /**
-     * decr().
+     * @param string $num
      *
-     * @access public
+     * @return mixed
      */
-    public function decr( string $key, $num = '' ) {
-        $num = ( ! empty( $num ) ? $num : 1 );
-        if ( $this->exists( $key ) ) {
-            $data = $this->get( $key );
-            if ( ! empty( $data ) && Func::is_var_int( $data ) && Func::is_var_int( $num ) ) {
-                if ( $num > PHP_INT_MAX ) {
+    public function decr(string $key, $num = '')
+    {
+        $num = (!empty($num) ? $num : 1);
+        if ($this->exists($key)) {
+            $data = $this->get($key);
+            if (!empty($data) && Func::isInt($data) && Func::isInt($num)) {
+                if ($num > PHP_INT_MAX) {
                     return 1;
                 }
 
-                $data = ( $data - $num );
-                if ( $data < -PHP_INT_MAX ) {
+                $data = ($data - $num);
+                if ($data < -PHP_INT_MAX) {
                     $data = -PHP_INT_MAX;
                 }
-                if ( $this->set( $key, $data ) ) {
+                if ($this->set($key, $data)) {
                     return $data;
                 }
             }
         }
 
-        if ( false !== $this->set( $key, 0 ) ) {
+        if (false !== $this->set($key, 0)) {
             return 0;
         }
+
         return false;
     }
 
     /**
-     * expire().
-     *
-     * @access public
+     * @return mixed
      */
-    public function expire( string $key, $expiry = 0 ) {
-        $data = $this->meta()->get( $key );
-        if ( ! empty( $data ) && \is_array( $data ) && ! empty( $data['key'] ) ) {
-            if ( ! empty( $expiry ) && Func::is_var_num( $expiry ) ) {
+    public function expire(string $key, int $expiry = 0)
+    {
+        $data = $this->meta()->get($key);
+        if (!empty($data) && \is_array($data) && !empty($data['key'])) {
+            if (!empty($expiry) && Func::isNum($expiry)) {
                 $expiry = (int) $expiry;
-                if ( $expiry > 0 ) {
-                    $data['expiry'] = ( time() + $expiry );
-                    if ( false !== $this->data_update( $key, $data ) ) {
+                if ($expiry > 0) {
+                    $data['expiry'] = (time() + $expiry);
+                    if (false !== $this->dataUpdate($key, $data)) {
                         return [
                             'key' => $key,
-                            'expiry' => gmdate( 'Y-m-d H:i:s', $data['expiry'] ).' UTC'
+                            'expiry' => gmdate('Y-m-d H:i:s', $data['expiry']).' UTC',
                         ];
                     }
                 }
@@ -801,10 +922,10 @@ class Monodb {
 
             // reset
             $data['expiry'] = 0;
-            if ( false !== $this->data_update( $key, $data ) ) {
+            if (false !== $this->dataUpdate($key, $data)) {
                 return [
                     'key' => $key,
-                    'expiry' => $data['expiry']
+                    'expiry' => $data['expiry'],
                 ];
             }
         }
@@ -813,58 +934,92 @@ class Monodb {
     }
 
     /**
-     * chain meta().
+     * @param mixed $data
      *
-     * @access public
+     * @return mixed
      */
-    public function meta( $enable = null ) {
-        $this->chain_meta = ( \is_bool( $enable ) ? $enable : true );
+    public function append(string $key, $data)
+    {
+        if (Arr::isEmpty($data) && !\is_string($data)) {
+            return false;
+        }
+
+        $meta = $this->meta()->get($key);
+        if (\is_array($meta) && !empty($meta['value'])) {
+            $buff = $meta['value'];
+            if (\is_array($buff) && \is_array($data)) {
+                if (!Arr::isNumeric($buff)) {
+                    $buff[] = $buff;
+                }
+                if (!Arr::isNumeric($data)) {
+                    $buff[] = $data;
+                } else {
+                    $buff = array_merge($buff, $data);
+                }
+            } elseif (\is_string($buff) && \is_string($data)) {
+                $buff = $buff.' '.$data;
+            } else {
+                return false;
+            }
+            $meta['value'] = $buff;
+
+            return $this->dataUpdate($key, $meta);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param mixed $enable
+     */
+    public function meta($enable = null): self
+    {
+        $this->chainMeta = (\is_bool($enable) ? $enable : true);
+
         return $this;
     }
 
     /**
-     * chain blob().
-     *
-     * @access public
+     * @param mixed $enable
      */
-    public function blob( $enable = null ) {
-        $this->chain_blob = ( \is_bool( $enable ) ? $enable : true );
+    public function blob($enable = null): self
+    {
+        $this->chainBlob = (\is_bool($enable) ? $enable : true);
+
         return $this;
     }
 
-    /**
-     * chain encrypt().
-     *
-     * @access public
-     */
-    public function encrypt( string $secret = '' ) {
-        $this->chain_encrypt = $secret;
+    public function encrypt(string $secret = ''): self
+    {
+        $this->chainEncrypt = $secret;
+
         return $this;
     }
 
-    /**
-     * chain decrypt().
-     *
-     * @access public
-     */
-    public function decrypt( string $secret = '' ) {
-        $this->chain_decrypt = $secret;
+    public function decrypt(string $secret = ''): self
+    {
+        $this->chainDecrypt = $secret;
+
         return $this;
     }
 
-    public function version() {
+    public function version(): string
+    {
         return self::VERSION;
     }
 
-    public function name() {
+    public function name(): string
+    {
         return self::NAME;
     }
 
-    public function desc() {
+    public function desc(): string
+    {
         return self::DESC;
     }
 
-    public function url() {
+    public function url(): string
+    {
         return self::URL;
     }
 }

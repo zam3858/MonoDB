@@ -1,4 +1,4 @@
-Find the value of key.
+Searches the value for a given key.
 
 <fg=cyan>Return value</>
 

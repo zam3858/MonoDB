@@ -1,0 +1,18 @@
+Append value to the key. A key must exists and is a string or array.
+
+<fg=cyan>Return value</>
+
+If successful will return key string, nil otherwise.
+
+<fg=cyan>Examples</>
+<info>
+%command.full_name% key string
+</info>
+Use '--as-array' option if want to set a value as Array string.
+<info>
+%command.full_name% key array_key=array_value --as-array
+</info>
+Use '--raw' option if want to output raw data. The raw data either a single string or as array string format.
+<info>
+%command.full_name% key string --raw
+</info>

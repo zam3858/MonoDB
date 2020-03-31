@@ -1,0 +1,10 @@
+Remove all keys from the current database.
+
+<fg=cyan>Return value</>
+
+If successful will return a count of deleted keys, nil otherwise.
+
+<fg=cyan>Examples</>
+<info>
+%command.full_name%
+</info>
