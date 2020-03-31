@@ -9,134 +9,172 @@
  */
 
 namespace Monodb;
-use \Symfony\Component\VarExporter\VarExporter;
 
-class Functions {
+use Symfony\Component\VarExporter\VarExporter;
 
-    public static function has_with( string $haystack, $needles ) {
-        foreach ( (array) $needles as $needle ) {
-            if ( false !== strpos( $haystack, (string) $needle ) ) {
+class Functions
+{
+    public static function hasWith(string $haystack, $needles): bool
+    {
+        foreach ((array) $needles as $needle) {
+            if (false !== strpos($haystack, (string) $needle)) {
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * end_with().
+     * endWith().
+     *
+     * @param mixed $needles
      */
-    public static function end_with( string $haystack, $needles ) {
-        foreach ( (array) $needles as $needle ) {
-            if ( substr( $haystack, -\strlen( $needle ) ) === (string) $needle ) {
+    public static function endWith(string $haystack, $needles): bool
+    {
+        foreach ((array) $needles as $needle) {
+            if (substr($haystack, -\strlen($needle)) === (string) $needle) {
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * start_with().
+     * startWith().
+     *
+     * @param mixed $needles
      */
-    public static function start_with( string $haystack, $needles ) {
-        foreach ( (array) $needles as $needle ) {
-            if ( '' !== $needle && 0 === strpos( $haystack, $needle ) ) {
+    public static function startWith(string $haystack, $needles): bool
+    {
+        foreach ((array) $needles as $needle) {
+            if ('' !== $needle && 0 === strpos($haystack, $needle)) {
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * is_file_readable().
+     * isFileReadable().
      */
-    public static function is_file_readable( string $file ) {
-        if ( is_file( $file ) && is_readable( $file ) ) {
-            clearstatcache( true, $file );
+    public static function isFileReadable(string $file): bool
+    {
+        if (is_file($file) && is_readable($file)) {
+            clearstatcache(true, $file);
+
             return true;
         }
+
         return false;
     }
 
     /**
-     * is_file_writable().
+     * isFileWritable().
      */
-    public static function is_file_writable( string $file ) {
-        if ( is_file( $file ) && is_writable( $file ) ) {
-            clearstatcache( true, $file );
+    public static function isFileWritable(string $file): bool
+    {
+        if (is_file($file) && is_writable($file)) {
+            clearstatcache(true, $file);
+
             return true;
         }
+
         return false;
     }
 
     /**
-     * is_var_binary().
+     * isBinary().
+     *
+     * @param mixed $blob
      */
-    public static function is_var_binary( $blob ) {
-        if ( \is_null( $blob ) || \is_integer( $blob ) ) {
+    public static function isBinary($blob): bool
+    {
+        if (null === $blob || \is_int($blob)) {
             return false;
         }
-        return ! ctype_print( $blob );
+
+        return !ctype_print($blob);
     }
 
     /**
-     * is_var_json().
+     * isJson().
      */
-    public static function is_var_json( string $string ) {
-        return ( \is_array( json_decode( $string, true ) )
-            && ( JSON_ERROR_NONE === json_last_error() ) ? true : false
-        );
+    public static function isJson(string $string): bool
+    {
+        return \is_array(json_decode($string, true))
+            && (JSON_ERROR_NONE === json_last_error()) ? true : false
+        ;
     }
 
     /**
-     * is_var_num().
+     * isNum().
+     *
+     * @param mixed $num
      */
-    public static function is_var_num( $num ) {
-        return preg_match( '@^\d+$@', (string) $num );
+    public static function isNum($num): bool
+    {
+        return  1 === preg_match('@^\d+$@', (string) $num) ? true : false;
     }
 
     /**
-     * is_var_int().
+     * isInt().
+     *
+     * @param mixed $num
      */
-    public static function is_var_int( $num ) {
-        return preg_match( '@^(\-)?\d+$@', (string) $num );
+    public static function isInt($num): bool
+    {
+        return  1 === preg_match('@^(\-)?\d+$@', (string) $num) ? true : false;
     }
 
     /**
-     * is_var_time().
+     * isTime().
+     *
+     * @param mixed $num
      */
-    public static function is_var_time( $num ) {
-        if ( self::is_var_num( $num ) && $num > 0 && $num < PHP_INT_MAX ) {
-            if ( false !== date( 'Y-m-d H:i:s', (int) $num ) ) {
+    public static function isTime($num): bool
+    {
+        if (self::isNum($num) && $num > 0 && $num < PHP_INT_MAX) {
+            if (false !== date('Y-m-d H:i:s', (int) $num)) {
                 return true;
             }
         }
-        return false;
-    }
-
-    /**
-     * is_var_stdclass().
-     */
-    public static function is_var_stdclass( $object ) {
-        if ( $object instanceof stdClass ) {
-            return true;
-        }
-
-        if ( preg_match( '@^stdClass\:\:__set_state\(.*@', var_export( $object, 1 ) ) ) {
-            return true;
-        }
 
         return false;
     }
 
     /**
-     * is_var_closure().
+     * isStdclass().
+     *
+     * @param mixed $object
      */
-    public static function is_var_closure( $object ) {
-        if ( $object instanceof Closure ) {
+    public static function isStdclass($object): bool
+    {
+        if ($object instanceof stdClass) {
             return true;
         }
 
-        if ( preg_match( '@^Closure\:\:__set_state\(.*@', var_export( $object, 1 ) ) ) {
+        if (preg_match('@^stdClass\:\:__set_state\(.*@', var_export($object, 1))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * isClosure().
+     *
+     * @param mixed $object
+     */
+    public static function isClosure($object): bool
+    {
+        if ($object instanceof Closure) {
+            return true;
+        }
+
+        if (preg_match('@^Closure\:\:__set_state\(.*@', var_export($object, 1))) {
             return true;
         }
 
@@ -146,32 +184,36 @@ class Functions {
     /**
      * encrypt().
      */
-    public static function encrypt( string $string, string $epad = '!!$$@#%^&!!' ) {
+    public static function encrypt(string $string, string $epad = '!!$$@#%^&!!')
+    {
         $mykey = '!!$'.$epad.'!!';
-        $pad = base64_decode( $mykey );
+        $pad = base64_decode($mykey, true);
         $encrypted = '';
 
-        set_error_handler( function() {}, E_WARNING | E_NOTICE );
-        for ( $i = 0; $i < \strlen( $string ); $i++ ) {
-            $encrypted .= \chr( \ord( $string[ $i ] ) ^ \ord( $pad[ $i ] ) );
+        set_error_handler(function () {
+        }, E_WARNING | E_NOTICE);
+        for ($i = 0; $i < \strlen($string); ++$i) {
+            $encrypted .= \chr(\ord($string[$i]) ^ \ord($pad[$i]));
         }
         restore_error_handler();
 
-        return strtr( base64_encode( $encrypted ), '=/', '$@' );
+        return strtr(base64_encode($encrypted), '=/', '$@');
     }
 
     /**
      * decrypt().
      */
-    public static function decrypt( string $string, string $epad = '!!$$@#%^&!!' ) {
+    public static function decrypt(string $string, string $epad = '!!$$@#%^&!!')
+    {
         $mykey = '!!$'.$epad.'!!';
-        $pad = base64_decode( $mykey );
-        $encrypted = base64_decode( strtr( $string, '$@', '=/' ) );
+        $pad = base64_decode($mykey, true);
+        $encrypted = base64_decode(strtr($string, '$@', '=/'), true);
         $decrypted = '';
 
-        set_error_handler( function() {}, E_WARNING | E_NOTICE );
-        for ( $i = 0; $i < \strlen( $encrypted ); $i++ ) {
-            $decrypted .= \chr( \ord( $encrypted[ $i ] ) ^ \ord( $pad[ $i ] ) );
+        set_error_handler(function () {
+        }, E_WARNING | E_NOTICE);
+        for ($i = 0; $i < \strlen($encrypted); ++$i) {
+            $decrypted .= \chr(\ord($encrypted[$i]) ^ \ord($pad[$i]));
         }
         restore_error_handler();
 
@@ -179,26 +221,30 @@ class Functions {
     }
 
     /**
-     * strip_scheme().
+     * stripScheme().
      */
-    public static function strip_scheme( string $string ) {
-        return preg_replace( '@^(file://|https?://|//)@', '', \trim( $string ) );
+    public static function stripScheme(string $string)
+    {
+        return preg_replace('@^(file://|https?://|//)@', '', trim($string));
     }
 
     /**
-     * match_wildcard(().
+     * matchWildcard(().
+     *
+     * @param mixed $matches
      */
-    public static function match_wildcard( string $string, $matches ): bool {
-        foreach ( (array) $matches as $match ) {
-            if ( self::has_with( $match, [ '*', '?' ] ) ) {
-                $wildcard_chars = [ '\*', '\?' ];
-                $regexp_chars = [ '.*', '.' ];
-                $regex = str_replace( $wildcard_chars, $regexp_chars, preg_quote( $match, '@' ) );
+    public static function matchWildcard(string $string, $matches): bool
+    {
+        foreach ((array) $matches as $match) {
+            if (self::hasWith($match, ['*', '?'])) {
+                $wildcardChars = ['\*', '\?'];
+                $regexpChars = ['.*', '.'];
+                $regex = str_replace($wildcardChars, $regexpChars, preg_quote($match, '@'));
 
-                if ( preg_match( '@^'.$regex.'$@is', $string ) ) {
+                if (preg_match('@^'.$regex.'$@is', $string)) {
                     return true;
                 }
-            } elseif ( $string === $match ) {
+            } elseif ($string === $match) {
                 return true;
             }
         }
@@ -207,80 +253,97 @@ class Functions {
     }
 
     /**
-     * normalize_path().
+     * normalizePath().
      */
-    public static function normalize_path( string $path ) {
-        $path = str_replace( '\\', '/', $path );
-        return preg_replace( '@[/]+@', '/', $path.'/' );
+    public static function normalizePath(string $path)
+    {
+        $path = str_replace('\\', '/', $path);
+
+        return preg_replace('@[/]+@', '/', $path.'/');
     }
 
     /**
-     * resolve_path().
+     * resolvePath().
      */
-    public static function resolve_path( string $path ) {
-        $path = self::normalize_path( $path );
+    public static function resolvePath(string $path)
+    {
+        $path = self::normalizePath($path);
 
-        if ( self::start_with( $path, '.' ) || ! self::start_with( $path, '/' ) ) {
+        if (self::startWith($path, '.') || !self::startWith($path, '/')) {
             $path = getcwd().'/'.$path;
         }
 
-        $path = str_replace( '/./', '/', $path );
+        $path = str_replace('/./', '/', $path);
         do {
-            $path = preg_replace( '@/[^/]+/\\.\\./@', '/', $path, 1, $cnt );
-        } while ( $cnt );
+            $path = preg_replace('@/[^/]+/\\.\\./@', '/', $path, 1, $cnt);
+        } while ($cnt);
 
         return $path;
     }
 
     /**
      * get_type().
+     *
+     * @param mixed $data
      */
-    public static function get_type( $data ) {
-        $type = \gettype( $data );
+    public static function get_type($data): string
+    {
+        $type = \gettype($data);
 
-        switch ( $type ) {
+        switch ($type) {
             case 'object':
-                if ( self::is_var_stdclass( $data ) ) {
+                if (self::isStdclass($data)) {
                     $type = 'stdClass';
-                } elseif ( self::is_var_closure( $data ) ) {
+                } elseif (self::isClosure($data)) {
                     $type = 'closure';
                 }
-                break;
+            break;
             case 'string':
-                if ( self::is_var_json( $data ) ) {
+                if (self::isJson($data)) {
                     $type = 'json';
-                } elseif ( self::is_var_binary( $data ) ) {
+                } elseif (self::isBinary($data)) {
                     $type = 'binary';
                 }
-                break;
+            break;
         }
+
         return $type;
     }
 
     /**
-     * get_size().
+     * getSize().
+     *
+     * @param mixed $data
      */
-    public static function get_size( $data ) {
-        return ( \is_array( $data ) || \is_object( $data ) ? sizeof( (array) $data ) : \strlen( $data ) );
+    public static function getSize($data)
+    {
+        return \is_array($data) || \is_object($data) ? \count((array) $data) : \strlen($data);
     }
 
     /**
-     * export_var().
+     * exportVar().
+     *
+     * @param mixed $data
      */
-    public static function export_var( $data ) {
-        return preg_replace( '@,(\s*)?\]@s', '$1]', VarExporter::export( $data ) );
+    public static function exportVar($data)
+    {
+        return VarExporter::export($data);
     }
 
     /**
-     * cutstr().
+     * cutStr().
+     *
+     * @param mixed $length
      */
-    public static function cutstr( string $text, $length = 50 ) {
-        if ( \strlen( $text ) > $length ) {
-            $text_r = substr( $text, 0, $length );
-            if ( $text_r !== $text ) {
-                $text = trim( $text_r ).'...';
+    public static function cutStr(string $text, $length = 50)
+    {
+        if (\strlen($text) > $length) {
+            $textr = substr($text, 0, $length);
+            if ($textr !== $text) {
+                $text = trim($textr).'...';
             }
         }
+
         return $text;
     }
 }
