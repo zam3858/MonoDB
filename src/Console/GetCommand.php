@@ -87,7 +87,7 @@ class GetCommand extends Command
         if (Func::hasWith($key, '*')) {
             $keyr = $this->console->db->keys($key);
             if (!empty($keyr)) {
-                $key = $keyr[0];
+                $key = (!\is_array($keyr[0]) ? $keyr[0] : '');
             }
         }
 

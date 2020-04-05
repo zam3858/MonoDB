@@ -31,7 +31,7 @@ class Config
     /**
      * @var string
      */
-    public $dbdir = '';
+    public $_saveDir = '';
 
     /**
      * @var string
@@ -56,12 +56,12 @@ class Config
     /**
      * @var int
      */
-    public $perm_dir = 0755;
+    public $perm_dir = 0777;
 
     /**
      * @var int
      */
-    public $perm_file = 0644;
+    public $perm_file = 0666;
 
     /**
      * @return void
@@ -69,7 +69,7 @@ class Config
     public function __construct(array $options)
     {
         $this->dir = sys_get_temp_dir().'/_monodb_/';
-        $this->dbdir = $this->dir.$this->dbname.'/';
+        $this->_saveDir = $this->dir.$this->dbname.'/';
 
         $config = $this->readConfigFile();
         if (!empty($config) && \is_array($config)) {
@@ -89,11 +89,11 @@ class Config
     {
         if (!empty($options['dir']) && \is_string($options['dir'])) {
             $this->dir = Func::resolvePath($options['dir'].'/_monodb_/');
-            $options['dbdir'] = $this->dir.$this->dbname.'/';
+            $options['_saveDir'] = $this->dir.$this->dbname.'/';
         }
 
         if (!empty($options['dbname']) && \is_string($options['dbname'])) {
-            $options['dbdir'] = $this->dir.'/'.$options['dbname'].'/';
+            $options['_saveDir'] = $this->dir.'/'.$options['dbname'].'/';
         }
 
         if (!empty($options['key_length']) && Func::isNum($options['key_length'])) {
@@ -127,16 +127,30 @@ class Config
         }
 
         foreach ($options as $key => $value) {
-            if (0 === strpos($key, '_')) {
-                continue;
-            }
             $this->{$key} = $value;
         }
 
-        $this->dbdir = Func::normalizePath($this->dbdir);
-        $this->dbindex = $this->dbdir.'index.php';
+        $this->_saveDir = Func::normalizePath($this->_saveDir);
+        $this->dbindex = $this->_saveDir.'index.php';
 
         return $options;
+    }
+
+    public function getIndexPath(string $file): string
+    {
+        return ltrim(str_replace(ltrim($this->_saveDir, './'), '', trim($file, '.php')), '/');
+    }
+
+    public function getOptions($key = '')
+    {
+        $options = get_object_vars($this);
+        foreach ($options as $k => $v) {
+            if (Func::startWith($k, '_')) {
+                unset($options[$k]);
+            }
+        }
+
+        return  !empty($options[$key]) ? $options[$key] : $options;
     }
 
     /**

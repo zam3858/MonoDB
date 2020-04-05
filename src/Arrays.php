@@ -31,16 +31,16 @@ class Arrays
     }
 
     /**
-     * @param mixed $parent_key
+     * @param string $parent_key
      */
-    public static function keysFlatten(array $array, $parent_key = ''): string
+    public static function keysFlatten(array $array, $parent_key = ''): array
     {
         $keys = array_keys($array);
         foreach ($array as $parent_key => $cnt) {
             if (\is_array($cnt)) {
                 $nestedKeys = self::{__FUNCTION__}($cnt, $parent_key);
                 foreach ($nestedKeys as $index => $key) {
-                    $nestedKeys[$index] = $parent_key.'.'.$key;
+                    $nestedKeys[$index] = $parent_key.'∫'.$key;
                 }
                 $keys = array_merge($keys, $nestedKeys);
             }
@@ -186,6 +186,21 @@ class Arrays
             $array = $dd;
             asort($array);
         }
+
+        return $array;
+    }
+
+    public static function sortBy(array $array, string $key, bool $desc = false): array
+    {
+        usort($array, function ($item1, $item2) use ($key, $desc) {
+            if (!empty($item1[$key]) && !empty($item2[$key])) {
+                if ($desc) {
+                    return $item2[$key] <=> $item1[$key];
+                }
+
+                return $item1[$key] <=> $item2[$key];
+            }
+        });
 
         return $array;
     }

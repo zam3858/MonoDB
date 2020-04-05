@@ -25,6 +25,7 @@ use Monodb\Console\SetCommand;
 use Monodb\Functions as Func;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Class Console.
@@ -63,13 +64,6 @@ class Console
     }
 
     /**
-     * @return void
-     */
-    public function __destruct()
-    {
-    }
-
-    /**
      * @param mixed $input
      * @param mixed $output
      *
@@ -94,7 +88,7 @@ class Console
         return $inst;
     }
 
-    public function confirm(string $text, bool $answer = false): object
+    public function confirm(string $text, bool $answer = false): bool
     {
         $io = new SymfonyStyle($this->input, $this->output);
 

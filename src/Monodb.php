@@ -21,22 +21,22 @@ class Monodb
     /**
      * @ignore
      */
-    const VERSION = '1.0.0';
+    private $version = '1.0.0';
 
     /**
      * @ignore
      */
-    const NAME = 'MonoDB';
+    private $name = 'MonoDB';
 
     /**
      * @ignore
      */
-    const DESC = 'A flat-file key-value data structure';
+    private $desc = 'A flat-file key-value data structure';
 
     /**
      * @ignore
      */
-    const URL = 'https://monodb.io';
+    private $url = 'https://monodb.io';
 
     /**
      * @var array
@@ -69,6 +69,11 @@ class Monodb
     private $errors = [];
 
     /**
+     * @var object
+     */
+    private $filesystem;
+
+    /**
      * Initialize the class and set its properties.
      *
      * @param array $options Database options
@@ -79,6 +84,7 @@ class Monodb
     {
         $this->checkDependencies();
         $this->config = new Config($options);
+        $this->filesystem = new Filesystem();
         $this->errors = [];
     }
 
@@ -183,23 +189,16 @@ class Monodb
     /**
      * Set and create data file.
      *
-     * @param string $key    Data key
-     * @param bool   $create (Optional) if set to true, data path will create
+     * @param string $key Data key
      *
      * @return string Returns full path of data file
      */
-    private function keyPath(string $key, bool $create = true): string
+    private function keyPath(string $key): string
     {
         $key = md5($key);
         $prefix = substr($key, 0, 2);
-        $path = $this->config->dbdir.$prefix.'/';
+        $path = $this->config->_saveDir.$prefix.'/';
         $key = substr($key, 2);
-
-        if ($create && !is_dir($path) && mkdir($path, $this->config->perm_dir, true)) {
-            $id = (string) basename($path);
-            $code = $this->dataCode($id);
-            $this->dataSave($path.'index.php', $code);
-        }
 
         return $path.$key.'.php';
     }
@@ -229,13 +228,15 @@ class Monodb
      */
     private function dataSave($file, $data): bool
     {
-        if (file_put_contents($file, $data, LOCK_EX)) {
-            chmod($file, $this->config->perm_file);
+        try {
+            $this->filesystem->put_contents($file, $data, $this->config->perm_file, $this->config->perm_dir);
+        } catch (\Exception $e) {
+            $this->catchDebug(__METHOD__, $e->getMessage());
 
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -250,7 +251,7 @@ class Monodb
     {
         if (!empty($data) && \is_array($data) && !empty($data['timestamp'])) {
             if ($this->exists($key)) {
-                $file = $this->keyPath($key, false);
+                $file = $this->keyPath($key);
 
                 if (Func::isFileWritable($file)) {
                     $data['timestamp'] = gmdate('Y-m-d H:i:s').' UTC';
@@ -303,7 +304,7 @@ class Monodb
         }
 
         $index[$key]['key'] = $key;
-        $index[$key]['index'] = ltrim(str_replace(ltrim($this->config->dbdir, './'), '', trim($path, '.php')), '/');
+        $index[$key]['index'] = $this->config->getIndexPath($path);
         $index[$key]['timestamp'] = $item['timestamp'];
         $index[$key]['expiry'] = (!empty($item['expiry']) ? $item['expiry'] : 0);
         $index[$key]['type'] = $item['type'];
@@ -378,38 +379,6 @@ class Monodb
     }
 
     /**
-     * Remove data directory if empty.
-     *
-     * @param string $file Data file
-     *
-     * @return bool Returns true if successful, false otherwise
-     */
-    private function flushKeyPath($file): bool
-    {
-        $dir = \dirname($file);
-        if (empty($dir) || '/' === $dir || !is_dir($dir)) {
-            return false;
-        }
-
-        $fc = glob($dir.'/*.php');
-        if (empty($fc)) {
-            return rmdir($dir.'/');
-        }
-
-        if (!file_exists($dir.'/index.php')) {
-            touch($dir.'/index.php');
-        }
-
-        if (\count($fc) <= 1) {
-            array_map('unlink', $fc);
-
-            return rmdir($dir.'/');
-        }
-
-        return false;
-    }
-
-    /**
      * Set the string value of key.
      *
      * @param mixed $data       Data content
@@ -471,7 +440,7 @@ class Monodb
         $meta['value'] = $data;
         $code = $this->dataCode($meta);
 
-        $file = $this->keyPath($key, true);
+        $file = $this->keyPath($key);
         if ($this->dataSave($file, $code)) {
             $this->setIndex($key, $file, $meta);
 
@@ -501,7 +470,7 @@ class Monodb
             return false;
         }
 
-        $file = $this->keyPath($key, false);
+        $file = $this->keyPath($key);
 
         $chainMeta = $this->chainMeta;
         $this->chainMeta = false;
@@ -549,7 +518,7 @@ class Monodb
             $this->chainDecrypt = false;
 
             if ($dataPlain && $chainBlob && 'binary' === $meta['type'] && !empty($meta['encoded']) && (1 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'])) {
-                $data = base64_decode($data, true);
+                $data = base64_encode($data, true);
                 $meta['encoded'] = (3 === (int) $meta['encoded'] ? 2 : 0);
             }
 
@@ -588,10 +557,9 @@ class Monodb
     public function delete(string $key)
     {
         $key = $this->sanitizeKey($key);
-        $file = $this->keyPath($key, false);
+        $file = $this->keyPath($key);
         if (Func::isFileWritable($file) && unlink($file)) {
             $this->unsetIndex($key);
-            $this->flushKeyPath($file);
 
             return $key;
         }
@@ -622,21 +590,22 @@ class Monodb
     /**
      * Remove all keys from current database.
      *
-     * @return int returns number of keys removed
+     * @return bool Returns true if successful, false otherwise
      */
-    public function flushDb(): int
+    public function flushDb(): bool
     {
-        $keys = $this->keys();
-        $num = 0;
-        if (!empty($keys) && \is_array($keys)) {
-            foreach ($keys as $key) {
-                if (false !== $this->delete($key)) {
-                    ++$num;
-                }
+        $dir = $this->config->_saveDir;
+        if (is_dir($dir)) {
+            try {
+                $this->filesystem->remove($dir);
+            } catch (\Exception $e) {
+                $this->catchDebug(__METHOD__, $e->getMessage());
+
+                return false;
             }
         }
 
-        return $num;
+        return true;
     }
 
     /**
@@ -759,7 +728,7 @@ class Monodb
     public function exists(string $key): bool
     {
         $key = $this->sanitizeKey($key);
-        $file = $this->keyPath($key, false);
+        $file = $this->keyPath($key);
 
         return Func::isFileReadable($file);
     }
@@ -787,19 +756,20 @@ class Monodb
                             }
                         }
                     }
+
                     if (!empty($rindex)) {
-                        return $rindex;
+                        $index = $rindex;
                     }
-
-                    return false;
+                } else {
+                    if (!$chainMeta) {
+                        $index = array_keys($index);
+                    }
                 }
-
-                if (!$chainMeta) {
-                    $index = array_keys($index);
-                }
-
-                return $index;
             }
+
+            $index = Arr::sortBy($index, 'timestamp');
+
+            return $index;
         }
 
         return false;
@@ -822,9 +792,7 @@ class Monodb
     {
         $info['name'] = $this->name();
         $info['version'] = $this->version();
-        foreach ($this->config as $k => $v) {
-            $info['config'][$k] = $v;
-        }
+        $info['config'] = $this->config->getOptions();
 
         if (Func::hasWith($name, 'config:')) {
             $info = $info['config'];
@@ -1005,21 +973,21 @@ class Monodb
 
     public function version(): string
     {
-        return self::VERSION;
+        return $this->version;
     }
 
     public function name(): string
     {
-        return self::NAME;
+        return $this->name;
     }
 
     public function desc(): string
     {
-        return self::DESC;
+        return $this->desc;
     }
 
     public function url(): string
     {
-        return self::URL;
+        return $this->url;
     }
 }

@@ -190,12 +190,9 @@ class Functions
         $pad = base64_decode($mykey, true);
         $encrypted = '';
 
-        set_error_handler(function () {
-        }, E_WARNING | E_NOTICE);
         for ($i = 0; $i < \strlen($string); ++$i) {
-            $encrypted .= \chr(\ord($string[$i]) ^ \ord($pad[$i]));
+            $encrypted .= @\chr(@\ord($string[$i]) ^ @\ord($pad[$i]));
         }
-        restore_error_handler();
 
         return strtr(base64_encode($encrypted), '=/', '$@');
     }
@@ -210,12 +207,9 @@ class Functions
         $encrypted = base64_decode(strtr($string, '$@', '=/'), true);
         $decrypted = '';
 
-        set_error_handler(function () {
-        }, E_WARNING | E_NOTICE);
         for ($i = 0; $i < \strlen($encrypted); ++$i) {
-            $decrypted .= \chr(\ord($encrypted[$i]) ^ \ord($pad[$i]));
+            $decrypted .= @\chr(@\ord($encrypted[$i]) ^ @\ord($pad[$i]));
         }
-        restore_error_handler();
 
         return $decrypted;
     }
@@ -225,7 +219,7 @@ class Functions
      */
     public static function stripScheme(string $string)
     {
-        return preg_replace('@^(file://|https?://|//)@', '', trim($string));
+        return @preg_replace('@^(file://|https?://|//)@', '', trim($string));
     }
 
     /**

@@ -57,12 +57,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/console.git",
-            "reference": "29da0e05888db75798e5fb65eef1d6dea8213f4c"
+            "reference": "619054da7627df1c2169c7aabe0df78f9320847c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/console/zipball/29da0e05888db75798e5fb65eef1d6dea8213f4c",
-            "reference": "29da0e05888db75798e5fb65eef1d6dea8213f4c",
+            "url": "https://api.github.com/repos/symfony/console/zipball/619054da7627df1c2169c7aabe0df78f9320847c",
+            "reference": "619054da7627df1c2169c7aabe0df78f9320847c",
             "shasum": ""
         },
         "require": {
@@ -98,7 +98,7 @@
             "symfony/lock": "",
             "symfony/process": ""
         },
-        "time": "2020-03-16T16:46:21+00:00",
+        "time": "2020-04-05T07:04:12+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -129,6 +129,72 @@
             }
         ],
         "description": "Symfony Console Component",
+        "homepage": "https://symfony.com",
+        "funding": [
+            {
+                "url": "https://symfony.com/sponsor",
+                "type": "custom"
+            },
+            {
+                "url": "https://github.com/fabpot",
+                "type": "github"
+            },
+            {
+                "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                "type": "tidelift"
+            }
+        ]
+    },
+    {
+        "name": "symfony/filesystem",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/filesystem.git",
+            "reference": "682216b4f4f35b39eebb8460b6d91cae0a302705"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/filesystem/zipball/682216b4f4f35b39eebb8460b6d91cae0a302705",
+            "reference": "682216b4f4f35b39eebb8460b6d91cae0a302705",
+            "shasum": ""
+        },
+        "require": {
+            "php": "^7.2.5",
+            "symfony/polyfill-ctype": "~1.8"
+        },
+        "time": "2020-03-30T11:43:41+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "5.1-dev"
+            }
+        },
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "Symfony\\Component\\Filesystem\\": ""
+            },
+            "exclude-from-classmap": [
+                "/Tests/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Fabien Potencier",
+                "email": "fabien@symfony.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
+            }
+        ],
+        "description": "Symfony Filesystem Component",
         "homepage": "https://symfony.com",
         "funding": [
             {
@@ -726,12 +792,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/var-exporter.git",
-            "reference": "800a544826b9a277f2f0a871bb45c07fa9803b4f"
+            "reference": "44a278361dfa72e108c241ebace562c1884fea68"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/var-exporter/zipball/800a544826b9a277f2f0a871bb45c07fa9803b4f",
-            "reference": "800a544826b9a277f2f0a871bb45c07fa9803b4f",
+            "url": "https://api.github.com/repos/symfony/var-exporter/zipball/44a278361dfa72e108c241ebace562c1884fea68",
+            "reference": "44a278361dfa72e108c241ebace562c1884fea68",
             "shasum": ""
         },
         "require": {
@@ -741,7 +807,7 @@
         "require-dev": {
             "symfony/var-dumper": "^4.4|^5.0"
         },
-        "time": "2020-03-16T16:46:21+00:00",
+        "time": "2020-04-04T09:52:45+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {

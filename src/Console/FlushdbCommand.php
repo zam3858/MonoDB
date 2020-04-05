@@ -66,6 +66,7 @@ class FlushdbCommand extends Command
 
         $db = $this->console->db;
         $results = $db->flushDb();
+        $results = ($results ? 'OK' : 'nil');
 
         $error = $db->lastError();
         if (!empty($error)) {
@@ -80,7 +81,7 @@ class FlushdbCommand extends Command
             return 0;
         }
 
-        $header = ['Removed'];
+        $header = ['Results'];
         $row[] = [$results];
 
         $this->console->outputTable($header, $row);
