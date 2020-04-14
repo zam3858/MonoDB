@@ -1,7 +1,18 @@
-<phpunit colors="true" bootstrap="tests/autoload.php">
+<phpunit bootstrap="tests/autoload.php"
+        verbose="true"
+        stopOnError="false"
+        stopOnFailure="false"
+        stopOnIncomplete="false"
+        stopOnSkipped="false"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="true"
+        convertWarningsToExceptions="true"
+        colors="true"
+        forceCoversAnnotation="false"
+        processIsolation="false">
   <testsuites>
-    <testsuite name="monodb">
-      <directory suffix="Test.php">tests</directory>
+    <testsuite name="MonoDB Tests">
+      <directory suffix="Test.php">./tests</directory>
     </testsuite>
   </testsuites>
 </phpunit>

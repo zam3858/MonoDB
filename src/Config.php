@@ -31,7 +31,7 @@ class Config
     /**
      * @var string
      */
-    public $_saveDir = '';
+    private $_saveDir = '';
 
     /**
      * @var string
@@ -41,27 +41,27 @@ class Config
     /**
      * @var int
      */
-    public $key_length = 150;
+    public $keylength = 150;
 
     /**
      * @var int
      */
-    public $key_expiry = 0;
+    public $keyexpiry = 0;
 
     /**
      * @var int
      */
-    public $blob_size = 5000000;
+    public $blobsize = 5000000;
 
     /**
      * @var int
      */
-    public $perm_dir = 0777;
+    public $dirmode = 0755;
 
     /**
      * @var int
      */
-    public $perm_file = 0666;
+    public $filemode = 0644;
 
     /**
      * @return void
@@ -89,45 +89,52 @@ class Config
     {
         if (!empty($options['dir']) && \is_string($options['dir'])) {
             $this->dir = Func::resolvePath($options['dir'].'/_monodb_/');
-            $options['_saveDir'] = $this->dir.$this->dbname.'/';
+
+            $this->checkPathLength($this->dir);
+            $this->_saveDir = $this->dir.$this->dbname.'/';
         }
 
         if (!empty($options['dbname']) && \is_string($options['dbname'])) {
-            $options['_saveDir'] = $this->dir.'/'.$options['dbname'].'/';
-        }
-
-        if (!empty($options['key_length']) && Func::isNum($options['key_length'])) {
-            $key_length = (int) $options['key_length'];
-            if ($key_length > 0) {
-                $options['key_length'] = $key_length;
+            if (!$this->isValidname($options['dbname'])) {
+                throw new \Exception(sprintf('Invalid database name: %s', $options['dbname']));
             }
-            $options['key_length'] = (int) $options['key_length'];
+            $this->_saveDir = $this->dir.'/'.$options['dbname'].'/';
         }
 
-        if (!empty($options['blob_size']) && Func::isNum($options['blob_size'])) {
-            $blob_size = (int) $options['blob_size'];
-            if ($blob_size > 0) {
-                $options['blob_size'] = $blob_size;
+        if (!empty($options['keylength']) && Func::isNum($options['keylength'])) {
+            $keylength = (int) $options['keylength'];
+            if ($keylength > 0) {
+                $options['keylength'] = $keylength;
             }
+            $options['keylength'] = (int) $options['keylength'];
         }
 
-        if (!empty($options['key_expiry']) && Func::isNum($options['key_expiry'])) {
-            $key_expiry = (int) $options['key_expiry'];
-            if ($key_expiry > 0) {
-                $options['key_expiry'] = $key_expiry;
+        if (!empty($options['blobsize']) && Func::isNum($options['blobsize'])) {
+            $blobsize = (int) $options['blobsize'];
+            if ($blobsize > 0) {
+                $options['blobsize'] = $blobsize;
             }
         }
 
-        if (!empty($options['perm_dir']) && Func::isNum($options['perm_dir'])) {
-            $options['perm_dir'] = $options['perm_dir'];
+        if (!empty($options['keyexpiry']) && Func::isNum($options['keyexpiry'])) {
+            $keyexpiry = (int) $options['keyexpiry'];
+            if ($keyexpiry > 0) {
+                $options['keyexpiry'] = $keyexpiry;
+            }
         }
 
-        if (!empty($options['perm_file']) && Func::isNum($options['perm_file'])) {
-            $options['perm_file'] = $options['perm_file'];
+        if (!empty($options['dirmode']) && Func::isOctal($options['dirmode'])) {
+            $options['dirmode'] = $options['dirmode'];
+        }
+
+        if (!empty($options['filemode']) && Func::isOctal($options['filemode'])) {
+            $options['filemode'] = $options['filemode'];
         }
 
         foreach ($options as $key => $value) {
-            $this->{$key} = $value;
+            if ('_' !== $key[0]) {
+                $this->{$key} = $value;
+            }
         }
 
         $this->_saveDir = Func::normalizePath($this->_saveDir);
@@ -145,12 +152,16 @@ class Config
     {
         $options = get_object_vars($this);
         foreach ($options as $k => $v) {
-            if (Func::startWith($k, '_')) {
+            if ('_' === $k[0]) {
                 unset($options[$k]);
+                continue;
+            }
+            if (Func::endWith($k, 'mode') && \is_int($v)) {
+                $options[$k] = '0'.decoct($v);
             }
         }
 
-        return  !empty($options[$key]) ? $options[$key] : $options;
+        return !empty($options[$key]) ? $options[$key] : $options;
     }
 
     /**
@@ -158,23 +169,12 @@ class Config
      */
     private function readConfigFile()
     {
-        $config = [];
-        if ('cli' === \PHP_SAPI && !empty($_SERVER['HOME'])) {
-            $config = $this->parseConfig($_SERVER['HOME'].'/.monodb.env');
-            if (!empty($config) && \is_array($config)) {
-                return $config;
-            }
-        } elseif (!empty($_SERVER['DOCUMENT_ROOT'])) {
-            $config = $this->parseConfig($_SERVER['DOCUMENT_ROOT'].'/.monodb.env');
-            if (!empty($config) && \is_array($config)) {
-                return $config;
-            }
-        }
+        if (false !== $file = getenv('MONODB_ENV')) {
+            $config = $this->parseConfig($file);
 
-        $file = getenv('MONODB_ENV', true);
-        $config = $this->parseConfig($file);
-        if (!empty($config) && \is_array($config)) {
-            return $config;
+            if (!empty($config) && \is_array($config)) {
+                return $config;
+            }
         }
 
         return false;
@@ -196,17 +196,44 @@ class Config
                         list($key, $value) = explode('=', trim($line));
                         $key = strtolower(trim($key));
                         $value = trim($value);
-                        if (!empty($key) && property_exists($this, $key) && !empty($value)) {
+                        if (!empty($key) && property_exists($this, $key) && !empty($value) && $this->isValidValue($value)) {
                             $config[$key] = $value;
                         }
                     }
                 }
                 if (!empty($config)) {
-                    $config['env'] = $file;
+                    $config['MONODB_ENV'] = $file;
                 }
             }
         }
 
         return $config;
+    }
+
+    public function getSaveDir()
+    {
+        return $this->_saveDir;
+    }
+
+    private function isValidname($name)
+    {
+        $namer = preg_replace('@[^A-Za-z0-9]@', '', $name);
+
+        return  $namer !== $name ? false : true;
+    }
+
+    private function isValidValue($arg)
+    {
+        $argr = preg_replace('@[^A-Za-z0-9/_.:]@', '', $arg);
+
+        return  $argr !== $arg ? false : true;
+    }
+
+    private function checkPathLength($path)
+    {
+        $maxPathLength = PHP_MAXPATHLEN - 2;
+        if (\strlen($path) > $maxPathLength) {
+            throw new \Exception(sprintf('Path length exceed %s characters.', $maxPathLength));
+        }
     }
 }

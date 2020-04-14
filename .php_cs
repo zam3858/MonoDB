@@ -14,8 +14,7 @@ return PhpCsFixer\Config::create()
     ])
     ->setFinder(
         PhpCsFixer\Finder::create()
-            ->in(__DIR__ . '/src')
-            ->in(__DIR__ . '/bin')
-            ->in(__DIR__ . '/tests')
-    )
-;
+            ->in(__DIR__.'/src')
+            ->in(__DIR__.'/bin')
+            ->in(__DIR__.'/tests')
+    );

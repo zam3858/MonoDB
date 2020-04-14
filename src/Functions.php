@@ -130,6 +130,16 @@ class Functions
     }
 
     /**
+     * isOctacl().
+     *
+     * @param mixed $num
+     */
+    public static function isOctal($num)
+    {
+        return decoct(octdec($num)) === $num;
+    }
+
+    /**
      * isTime().
      *
      * @param mixed $num
@@ -276,11 +286,11 @@ class Functions
     }
 
     /**
-     * get_type().
+     * getType().
      *
      * @param mixed $data
      */
-    public static function get_type($data): string
+    public static function getType($data): string
     {
         $type = \gettype($data);
 

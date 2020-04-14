@@ -7,7 +7,9 @@ if ( 'cli' === php_sapi_name() && ! empty( $_SERVER['SCRIPT_NAME'] ) ) {
         echo "autoload file not found\n";
         exit(1);
     }
-    putenv('MONODB_ENV='.$dir.'/.monodb.env');
+    if ( false === getenv('MONODB_ENV') ) {
+        putenv('MONODB_ENV='.$dir.'/.monodb.env');
+    }
     require_once( $config );
     $app = new Monodb\Console();
     $app->run();

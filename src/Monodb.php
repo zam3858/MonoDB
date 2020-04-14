@@ -11,6 +11,7 @@
 namespace Monodb;
 
 use Monodb\Arrays as Arr;
+use Monodb\Encode as Enc;
 use Monodb\Functions as Func;
 
 /**
@@ -107,11 +108,11 @@ class Monodb
     {
         $php_version = '7.1';
         if (version_compare(PHP_VERSION, $php_version, '<')) {
-            throw new \Exception('MonoDB requires PHP Version '.$php_version.' and above.');
+            throw new \Exception(sprintf('%s v%s requires PHP Version "%s" and above.', $this->name, $this->version, $php_version));
         }
 
         if (!\extension_loaded('json')) {
-            throw new \Exception('MonoDB requires json extension.');
+            throw new \Exception(sprintf('%s v%s requires json extension.', $this->name, $this->version));
         }
 
         return true;
@@ -183,7 +184,7 @@ class Monodb
             $key = substr($keyr.md5($key.$keyr.mt_srand()), 0, 12);
         }
 
-        return substr($key, 0, $this->config->key_length);
+        return substr($key, 0, $this->config->keylength);
     }
 
     /**
@@ -197,7 +198,7 @@ class Monodb
     {
         $key = md5($key);
         $prefix = substr($key, 0, 2);
-        $path = $this->config->_saveDir.$prefix.'/';
+        $path = $this->config->getSaveDir().$prefix.'/';
         $key = substr($key, 2);
 
         return $path.$key.'.php';
@@ -229,7 +230,7 @@ class Monodb
     private function dataSave($file, $data): bool
     {
         try {
-            $this->filesystem->put_contents($file, $data, $this->config->perm_file, $this->config->perm_dir);
+            $this->filesystem->put_contents($file, $data, $this->config->filemode, $this->config->dirmode);
         } catch (\Exception $e) {
             $this->catchDebug(__METHOD__, $e->getMessage());
 
@@ -394,7 +395,7 @@ class Monodb
         $meta = [
             'timestamp' => gmdate('Y-m-d H:i:s').' UTC',
             'key' => $key,
-            'type' => Func::get_type($data),
+            'type' => Func::getType($data),
             'size' => Func::getSize($data),
         ];
 
@@ -405,14 +406,14 @@ class Monodb
         }
 
         if ('binary' === $meta['type']) {
-            $blob_size = (int) $meta['size'];
-            if ($blob_size >= $this->config->blob_size) {
-                $this->catchDebug(__METHOD__, 'Maximum binary size exceeded: '.$blob_size);
+            $blobsize = (int) $meta['size'];
+            if ($blobsize >= $this->config->blobsize) {
+                $this->catchDebug(__METHOD__, 'Maximum binary size exceeded: '.$blobsize);
 
                 return false;
             }
 
-            $data = base64_encode($data);
+            $data = Enc::encodeBinary($data);
             $meta['size'] = \strlen($data);
             $meta['encoded'] = 1;
         }
@@ -422,8 +423,8 @@ class Monodb
             if ($expiry > 0) {
                 $meta['expiry'] = time() + $expiry;
             }
-        } elseif (!empty($this->config->key_expiry)) {
-            $meta['expiry'] = (int) $this->key_expiry;
+        } elseif (!empty($this->config->keyexpiry)) {
+            $meta['expiry'] = (int) $this->keyexpiry;
         }
 
         if (!empty($extra_meta) && \is_array($extra_meta)) {
@@ -518,7 +519,7 @@ class Monodb
             $this->chainDecrypt = false;
 
             if ($dataPlain && $chainBlob && 'binary' === $meta['type'] && !empty($meta['encoded']) && (1 === (int) $meta['encoded'] || 3 === (int) $meta['encoded'])) {
-                $data = base64_encode($data, true);
+                $data = Enc::decodeBinary($data);
                 $meta['encoded'] = (3 === (int) $meta['encoded'] ? 2 : 0);
             }
 
@@ -558,6 +559,7 @@ class Monodb
     {
         $key = $this->sanitizeKey($key);
         $file = $this->keyPath($key);
+
         if (Func::isFileWritable($file) && unlink($file)) {
             $this->unsetIndex($key);
 
@@ -594,7 +596,7 @@ class Monodb
      */
     public function flushDb(): bool
     {
-        $dir = $this->config->_saveDir;
+        $dir = $this->config->getSaveDir();
         if (is_dir($dir)) {
             try {
                 $this->filesystem->remove($dir);
@@ -777,12 +779,26 @@ class Monodb
 
     public function select(string $dbname): self
     {
-        return $this->options(['dbname' => $dbname]);
+        $chain = $this;
+        try {
+            $chain = $this->options(['dbname' => $dbname]);
+        } catch (\Exception $e) {
+            $this->catchDebug(__METHOD__, $e->getMessage());
+        }
+
+        return $chain;
     }
 
     public function select_dir(string $dir): self
     {
-        return $this->options(['dir' => $dir]);
+        $chain = $this;
+        try {
+            $chain = $this->options(['dir' => $dir]);
+        } catch (\Exception $e) {
+            $this->catchDebug(__METHOD__, $e->getMessage());
+        }
+
+        return $chain;
     }
 
     /**

@@ -31,6 +31,10 @@ class FlushdbCommand extends Command
     private $console;
 
     /**
+     * Init.
+     *
+     * @param object $parent Console object
+     *
      * @return void
      */
     public function __construct(object $parent)
@@ -52,7 +56,12 @@ class FlushdbCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * Call to execute command.
+     *
+     * @param InputInterface  $input  Input Interface
+     * @param OutputInterface $output Output Interface
+     *
+     * @return int Returns 0 if successful, 1 otherwise
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

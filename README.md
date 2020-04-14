@@ -1,8 +1,6 @@
 
 # ![MonoDB](https://static.monodb.io/logo-150x150.svg) MonoDB
 
-__** NOTE: MonoDB currently work in progress heavily in development stage. Changes and refactoring the code will be expected.**__
-
 MonoDB is flat-file key-value data structure store, used as a database, cache and message broker. 
 
 Simple by design, included with console command, intends to provide as alternative options when you need quick and reliable solution to store and retrieve data without require a server-based application.
@@ -122,11 +120,11 @@ $db = new Monodb(
     [
      	'dir'        => 'path/to/data/dir',
         'dbname'      => 'monodb0',
-        'key_length'  => 50,
-        'blob_size'   => 5000000,
-        'key_expiry'  => 0,
-        'perm_dir'    => 0755,
-        'perm_file'   => 0644
+        'keylength'  => 50,
+        'blobsize'   => 5000000,
+        'keyexpiry'  => 0,
+        'dirmode'    => 0755,
+        'filemode'   => 0644
     ]
 );
 
@@ -136,21 +134,21 @@ Name|Type|Default Value|Description
 :---|:---|:---|:---
 `dir`|string|<temp-dir\>/\_monodb\_|The directory where the database are stored.
 `dbname`|string|db0|The directory where the data files are stored.
-`key_length`|int|50|Maximum key length. Larger than this will truncated.
-`blob_size`|int|5000000|Maximum size in byte of binary file can be stored.
-`key_expiry`|int|0|Default key expiry in timestamp for all keys.
-`perm_dir`|int|0755|Default Unix directory permission.
-`perm_file`|int|0644|Default Unix file permission.
+`keylength`|int|50|Maximum key length. Larger than this will truncated.
+`blobsize`|int|5000000|Maximum size in byte of binary file can be stored.
+`keyexpiry`|int|0|Default key expiry in timestamp for all keys.
+`dirmode`|int|0755|Default Unix directory permission.
+`filemode`|int|0644|Default Unix file permission.
 
 
 By default, console command will read the configuration from '.monodb.env' file located in HOME, DOCUMENT_ROOT and same working directory with the console.
 ```
 DIR=
 DBNAME=
-KEY_LENGTH=
-BLOB_SIZE=
-PERM_DIR=
-PERM_FILE=
+KEYLENGTH=
+BLOBSIZE=
+DIRMODE=
+FILEMODE=
 ```
 
 ## How Versions Work

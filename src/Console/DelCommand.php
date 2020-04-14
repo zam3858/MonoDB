@@ -54,7 +54,12 @@ class DelCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * Call to execute command.
+     *
+     * @param InputInterface  $input  Input Interface
+     * @param OutputInterface $output Output Interface
+     *
+     * @return int Returns 0 if successful, 1 otherwise
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -80,11 +85,11 @@ class DelCommand extends Command
             if (Func::hasWith($key, '*')) {
                 $keyr = $dbChain->keys($key);
                 if (!empty($keyr)) {
-                    $key = $keyr[0];
+                    $key = (!\is_array($keyr[0]) ? $keyr[0] : '');
                 }
             }
 
-            if (false !== $dbChain->delete($key)) {
+            if (!empty($key) && false !== $dbChain->delete($key)) {
                 ++$cnt;
             }
         }
