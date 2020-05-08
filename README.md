@@ -62,10 +62,20 @@ require 'path-to-monodb-dir/autoload.php';
 ./path-to-monodb-dir/bin/monodb
 ```
 
+MonoDB come with PHAR files. Download the [MonoDB-phar](https://github.com/nawawi/MonoDB/releases/) file, either library file or CLI file.
+
+- Load library
+```php
+require 'path-to-monodb-phar-lib/monodb-lib.phar';
+```
+- Accessing Console
+```
+./path-to-monodb-phar-bin/monodb-cli.phar
+```
 
 ## Basic Usage
 
-- Library
+`Using Library:`
 ```php
 <?php
 use Monodb;
@@ -86,7 +96,8 @@ echo $response;
 // Retrieve and display the value of "greeting" key.
 echo $db->get( 'greeting' );
 ```
-- Console
+
+`Using CLI`
   
 ```
 monodb set greeting 'hello world!'
@@ -105,6 +116,7 @@ monodb get greeting
 | greeting | hello world! |
 +----------+--------------+
 ```
+
 
 ## Config Options
 
@@ -141,14 +153,33 @@ Name|Type|Default Value|Description
 `filemode`|int|0644|Default Unix file permission.
 
 
-By default, console command will read the configuration from '.monodb.env' file located in HOME, DOCUMENT_ROOT and same working directory with the console.
+## Config File
+By default, MonoDB will read configuration options from `.monodb` file locates in $HOME directory. You can overwrite it by set MONODB_CONFIG environment variable.
+
+`PHP example:`
+```php
+<?php
+putenv('MONODB_CONFIG=/fullpath-to-config-file');
 ```
-DIR=
-DBNAME=
-KEYLENGTH=
-BLOBSIZE=
-DIRMODE=
-FILEMODE=
+
+`Bash example:`
+```
+#!/usr/bin/env bash
+export MONODB_CONFIG=/fullpath-to-config-file
+/path-to-monodb-bin/monodb-cli.phar
+```
+
+`Configuration example:`
+All options are case-insensitive.
+
+```
+DIR=/tmp/_monodb_
+DBNAME=db0
+KEYLENGTH=50
+BLOBSIZE=5000000
+KEYEXPIRY=0
+DIRMODE=0755
+FILEMODE=0644
 ```
 
 ## How Versions Work

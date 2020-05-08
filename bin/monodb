@@ -1,16 +1,24 @@
 #!/usr/bin/env php
 <?php
-if ( 'cli' === php_sapi_name() && ! empty( $_SERVER['SCRIPT_NAME'] ) ) {
+if ('cli' === PHP_SAPI && !empty($_SERVER['SCRIPT_NAME'])) {
     $dir = realpath(dirname($_SERVER['SCRIPT_NAME']));
-    $config = $dir.'/../autoload.php';
-    if ( !file_exists($config) ) {
+    $autoload = $dir.'/../autoload.php';
+
+    if (class_exists('Phar') && \strlen(Phar::running()) > 0) {
+        $autoload = '../autoload.php';
+    }
+
+    if (!file_exists($autoload)) {
         echo "autoload file not found\n";
         exit(1);
     }
-    if ( false === getenv('MONODB_ENV') ) {
-        putenv('MONODB_ENV='.$dir.'/.monodb.env');
+    if (false === getenv('MONODB_CONFIG')) {
+        if (!empty($_SERVER['HOME']) && file_exists($_SERVER['HOME'].'/.monodb')) {
+            $dir = $_SERVER['HOME'];
+        }
+        putenv('MONODB_CONFIG='.$dir.'/.monodb');
     }
-    require_once( $config );
+    require_once $autoload;
     $app = new Monodb\Console();
     $app->run();
 }

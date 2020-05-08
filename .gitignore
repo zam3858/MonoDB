@@ -5,3 +5,4 @@ composer.lock
 !/tests/
 /tests/*
 !/tests/*.php
+*-phar*.php

@@ -169,7 +169,7 @@ class Config
      */
     private function readConfigFile()
     {
-        if (false !== $file = getenv('MONODB_ENV')) {
+        if (false !== $file = getenv('MONODB_CONFIG')) {
             $config = $this->parseConfig($file);
 
             if (!empty($config) && \is_array($config)) {
@@ -202,7 +202,7 @@ class Config
                     }
                 }
                 if (!empty($config)) {
-                    $config['MONODB_ENV'] = $file;
+                    $config['MONODB_CONFIG'] = $file;
                 }
             }
         }
@@ -219,14 +219,14 @@ class Config
     {
         $namer = preg_replace('@[^A-Za-z0-9]@', '', $name);
 
-        return  $namer !== $name ? false : true;
+        return $namer !== $name ? false : true;
     }
 
     private function isValidValue($arg)
     {
         $argr = preg_replace('@[^A-Za-z0-9/_.:]@', '', $arg);
 
-        return  $argr !== $arg ? false : true;
+        return $argr !== $arg ? false : true;
     }
 
     private function checkPathLength($path)
