@@ -160,19 +160,24 @@ By default, MonoDB will read configuration options from `.monodb` file locates i
 ```php
 <?php
 putenv('MONODB_CONFIG=/fullpath-to-config-file');
+$db = new Monodb/Monodb();
+$response = $db->info('config:monodb_config');
+echo $response;
 ```
 
 `Bash example:`
 ```
 #!/usr/bin/env bash
 export MONODB_CONFIG=/fullpath-to-config-file
-/path-to-monodb-bin/monodb-cli.phar
+/path-to-monodb-bin/monodb-cli.phar $@
 ```
 
 `Configuration example:`
+
 All options are case-insensitive.
 
 ```
+# this is comment
 DIR=/tmp/_monodb_
 DBNAME=db0
 KEYLENGTH=50
