@@ -160,7 +160,7 @@ By default, MonoDB will read configuration options from `.monodb` file locates i
 ```php
 <?php
 putenv('MONODB_CONFIG=/fullpath-to-config-file');
-$db = new Monodb/Monodb();
+$db = new Monodb\Monodb();
 $response = $db->info('config:monodb_config');
 echo $response;
 ```
