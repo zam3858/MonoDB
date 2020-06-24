@@ -213,8 +213,20 @@ class Monodb
      */
     private function dataCode($data): string
     {
+        try {
+            $data = Func::exportVar($data);
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+            if (false !== strpos($error, 'Cannot export value of type "stdClass"')) {
+                $data = var_export($data, 1);
+                $data = str_replace('stdClass::__set_state', 'Monodb\Arrays::stdClassObject', $data);
+            } else {
+                $this->catchDebug(__METHOD__, $e->getMessage());
+            }
+        }
+
         $code = '<?php'.PHP_EOL;
-        $code .= 'return '.Func::exportVar($data).';'.PHP_EOL;
+        $code .= 'return '.$data.';'.PHP_EOL;
 
         return $code;
     }

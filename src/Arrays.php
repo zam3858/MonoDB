@@ -257,4 +257,14 @@ class Arrays
 
         return true;
     }
+
+    /**
+     * stdClassObject().
+     *
+     * @param array $arr
+     */
+    public static function stdClassObject($arr)
+    {
+        return (object) $arr;
+    }
 }
