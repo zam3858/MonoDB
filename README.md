@@ -3,7 +3,7 @@
 
 MonoDB is flat-file key-value data structure store, used as a database, cache and message broker. 
 
-Simple by design, included with console command, intends to provide as alternative options when you need quick and reliable solution to store and retrieve data without require a server-based application.
+Simple by design, includes with console command, intended to provide an alternative when you need a quick and reliable data storage and retrieval solution without requiring a server-based application.
 
 - [API Reference](https://github.com/nawawi/MonoDB/wiki/Base-Methods)
 - [Console Commands](https://github.com/nawawi/MonoDB/wiki/Command-Set)
@@ -14,16 +14,16 @@ Simple by design, included with console command, intends to provide as alternati
 
 ## Features
 
-- Key/Value Data Storing
+- Key/Value Data Storage
 - Array-based Data Structure
 - Key Expires
-- Support multiple data structure
-- Can store content of file
+- Supports multiple data structure
+- Can store content of files
 - Encrypt/Decrypt data
 - File locking
 
 
-## Supported data type
+## Supported data types
 
 - string
 - integer
@@ -36,7 +36,7 @@ Simple by design, included with console command, intends to provide as alternati
 
 ## Installation
 
-To use MonoDB require minimum PHP 7.1 and json extension installed.
+MonoDB requires PHP 7.1 and above with json extension enabled.
 
 Use [Composer](http://getcomposer.org/) to install package.
 
@@ -62,7 +62,7 @@ require 'path-to-monodb-dir/autoload.php';
 ./path-to-monodb-dir/bin/monodb
 ```
 
-MonoDB come with PHAR files. Download the [MonoDB-phar](https://github.com/nawawi/MonoDB/releases/) file, either library file or CLI file.
+MonoDB comes with PHAR files. Download the [MonoDB-phar](https://github.com/nawawi/MonoDB/releases/) file, either library file or CLI file.
 
 - Load library
 ```php
@@ -144,9 +144,9 @@ $db = new Monodb(
 
 Name|Type|Default Value|Description
 :---|:---|:---|:---
-`dir`|string|<temp-dir\>/\_monodb\_|The directory where the database are stored.
-`dbname`|string|db0|The directory where the data files are stored.
-`keylength`|int|50|Maximum key length. Larger than this will truncated.
+`dir`|string|<temp-dir\>/\_monodb\_|Path to where the database is stored.
+`dbname`|string|db0|Path to where data files are stored.
+`keylength`|int|50|Maximum key length. Larger than this will be truncated.
 `blobsize`|int|5000000|Maximum size in byte of binary file can be stored.
 `keyexpiry`|int|0|Default key expiry in timestamp for all keys.
 `dirmode`|int|0755|Default Unix directory permission.
@@ -198,7 +198,7 @@ Versions are as follows: Major.Minor.Patch
 
 ## Contributions
 
-Anyone can contribute to MonoDB. Please do so by posting issues when you've found something that is unexpected or sending a pull request for improvements.
+Anyone can contribute to MonoDB. Please do so by posting issues when you've found something unexpected or sending pull requests for improvements.
 
 
 ## License
